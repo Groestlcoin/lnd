@@ -89,7 +89,7 @@ var bumpFeeCommand = cli.Command{
 	Usage:     "Bumps the fee of an arbitrary input/transaction.",
 	ArgsUsage: "outpoint",
 	Description: `
-	This command takes a different approach than bitcoind's bumpfee command.
+	This command takes a different approach than groestlcoind's bumpfee command.
 	lnd has a central batching engine in which inputs with similar fee rates
 	are batched together to save on transaction fees. Due to this, we cannot
 	rely on bumping the fee on a specific transaction, since transactions

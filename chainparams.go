@@ -34,7 +34,7 @@ type litecoinNetParams struct {
 // test network.
 var bitcoinTestNetParams = bitcoinNetParams{
 	Params:   &bitcoinCfg.TestNet3Params,
-	rpcPort:  "18334",
+	rpcPort:  "17764",
 	CoinType: keychain.CoinTypeTestnet,
 }
 
@@ -42,7 +42,7 @@ var bitcoinTestNetParams = bitcoinNetParams{
 // mainnet.
 var bitcoinMainNetParams = bitcoinNetParams{
 	Params:   &bitcoinCfg.MainNetParams,
-	rpcPort:  "8334",
+	rpcPort:  "1444",
 	CoinType: keychain.CoinTypeBitcoin,
 }
 
@@ -90,7 +90,7 @@ var litecoinRegTestNetParams = litecoinNetParams{
 // regtest network.
 var bitcoinRegTestNetParams = bitcoinNetParams{
 	Params:   &bitcoinCfg.RegressionNetParams,
-	rpcPort:  "18334",
+	rpcPort:  "17764",
 	CoinType: keychain.CoinTypeTestnet,
 }
 
@@ -110,8 +110,6 @@ func applyLitecoinParams(params *bitcoinNetParams, litecoinParams *litecoinNetPa
 	params.PubKeyHashAddrID = litecoinParams.PubKeyHashAddrID
 	params.ScriptHashAddrID = litecoinParams.ScriptHashAddrID
 	params.PrivateKeyID = litecoinParams.PrivateKeyID
-	params.WitnessPubKeyHashAddrID = litecoinParams.WitnessPubKeyHashAddrID
-	params.WitnessScriptHashAddrID = litecoinParams.WitnessScriptHashAddrID
 	params.Bech32HRPSegwit = litecoinParams.Bech32HRPSegwit
 
 	copy(params.HDPrivateKeyID[:], litecoinParams.HDPrivateKeyID[:])

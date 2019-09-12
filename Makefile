@@ -231,3 +231,6 @@ clean:
 	android \
 	mobile \
 	clean
+
+reset-mod:
+	git checkout go.mod go.sum

@@ -1,4 +1,4 @@
-DEV_TAGS = dev
+DEV_TAGS = dev autopilotrpc chainrpc invoicesrpc routerrpc signrpc walletrpc watchtowerrpc
 LOG_TAGS =
 TEST_FLAGS =
 COVER_PKG = $$(go list -deps ./... | grep '$(PKG)' | grep -v lnrpc)

@@ -35,7 +35,7 @@ const (
 )
 
 var (
-	defaultLndDir      = btcutil.AppDataDir("lnd", false)
+	defaultLndDir      = btcutil.AppDataDir("lnd-grs", false)
 	defaultTLSCertPath = filepath.Join(defaultLndDir, defaultTLSCertFilename)
 
 	// maxMsgRecvSize is the largest message our client will receive. We
@@ -155,7 +155,7 @@ func extractPathArgs(ctx *cli.Context) (string, string, error) {
 	// specified.
 	chain := strings.ToLower(ctx.GlobalString("chain"))
 	switch chain {
-	case "bitcoin", "litecoin":
+	case "groestlcoin":
 	default:
 		return "", "", fmt.Errorf("unknown chain: %v", chain)
 	}
@@ -224,9 +224,10 @@ func main() {
 			Usage: "path to TLS certificate",
 		},
 		cli.StringFlag{
-			Name:  "chain, c",
-			Usage: "the chain lnd is running on e.g. bitcoin",
-			Value: "bitcoin",
+			Name:   "chain, c",
+			Usage:  "the chain lnd is running on e.g. groestlcoin",
+			Value:  "groestlcoin",
+			Hidden: true,
 		},
 		cli.StringFlag{
 			Name: "network, n",

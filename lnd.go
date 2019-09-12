@@ -235,7 +235,7 @@ func Main(lisCfg ListenerCfg) error {
 		mainChain = cfg.Litecoin
 	}
 	var neutrinoCS *neutrino.ChainService
-	if mainChain.Node == "neutrino" {
+	if mainChain.NodeT == "neutrino" {
 		neutrinoBackend, neutrinoCleanUp, err := initNeutrinoBackend(
 			mainChain.ChainDir,
 		)

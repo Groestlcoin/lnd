@@ -3,15 +3,15 @@
     * [Preliminaries](#preliminaries)
     * [Installing lnd](#installing-lnd)
 * [Available Backend Operating Modes](#available-backend-operating-modes)
-  * [btcd Options](#btcd-options)
+  * [grsd Options](#grsd-options)
   * [Neutrino Options](#neutrino-options)
-  * [Bitcoind Options](#bitcoind-options)
-  * [Using btcd](#using-btcd)
-    * [Installing btcd](#installing-btcd)
-    * [Starting btcd](#starting-btcd)
-    * [Running lnd using the btcd backend](#running-lnd-using-the-btcd-backend)
+  * [groestlcoind Options](#groestlcoind-options)
+  * [Using grsd](#using-grsd)
+    * [Installing grsd](#installing-grsd)
+    * [Starting grsd](#starting-grsd)
+    * [Running lnd using the grsd backend](#running-lnd-using-the-grsd-backend)
   * [Using Neutrino](#using-neutrino)
-  * [Using bitcoind or litecoind](#using-bitcoind-or-litecoind)
+  * [Using groestlcoind](#using-groestlcoind)
 * [Creating a Wallet](#creating-a-wallet)
 * [Macaroons](#macaroons)
 * [Network Reachability](#network-reachability)
@@ -21,7 +21,7 @@
 # Installation
 
 ### Preliminaries
-  In order to work with [`lnd`](https://github.com/lightningnetwork/lnd), the
+  In order to work with [`lnd`](https://github.com/Groestlcoin/lnd), the
   following build dependencies are required:
 
   * **Go:** `lnd` is written in Go. To install, run one of the following commands:
@@ -101,17 +101,17 @@
 
 ### Installing lnd
 
+You can download the latest `lnd` binaries
+[here](https://github.com/Groestlcoin/lnd/releases).  Alternatively, follow the
+instructions below to build `lnd` yourself.
+
 With the preliminary steps completed, to install `lnd`, `lncli`, and all
 related dependencies run the following commands:
 ```
-go get -d github.com/lightningnetwork/lnd
-cd $GOPATH/src/github.com/lightningnetwork/lnd
+git clone https://github.com/Groestlcoin/lnd/
+cd lnd
 make && make install
 ```
-
-**NOTE**: Our instructions still use the `$GOPATH` directory from prior
-versions of Go, but with Go 1.12, it's now possible for `lnd` to live
-_anywhere_ on your file system.
 
 For Windows WSL users, make will need to be referenced directly via
 /usr/bin/make/, or alternatively by wrapping quotation marks around make,
@@ -136,7 +136,7 @@ GO111MODULE=on go install -v ./...
 To update your version of `lnd` to the latest version run the following
 commands:
 ```
-cd $GOPATH/src/github.com/lightningnetwork/lnd
+cd lnd
 git pull
 make clean && make && make install
 ```
@@ -146,7 +146,7 @@ On FreeBSD, use gmake instead of make.
 Alternatively, if one doesn't wish to use `make`, then the `go` commands can be
 used directly:
 ```
-cd $GOPATH/src/github.com/lightningnetwork/lnd
+cd lnd
 git pull
 GO111MODULE=on go install -v ./...
 ```
@@ -162,28 +162,27 @@ make check
 
 In order to run, `lnd` requires, that the user specify a chain backend. At the
 time of writing of this document, there are three available chain backends:
-`btcd`, `neutrino`, `bitcoind`. All but neutrino (atm) can run on mainnet with
+`grsd`, `neutrino`, `groestlcoind`. All but neutrino (atm) can run on mainnet with
 an out of the box `lnd` instance. We don't require `--txindex` when running
-with `bitcoind` or `btcd` but activating the `txindex` will generally make
+with `groestlcoind` or `grsd` but activating the `txindex` will generally make
 `lnd` run faster.
 
 **NOTE: WE DO NOT FULLY SUPPORT PRUNED OPERATING MODES FOR FULL NODES.** It's
 possible to run a node in a pruned mode and have it serve lnd, however one must
 take care to ensure that `lnd` has all blocks on disk since the birth of the
-wallet, and the age of the earliest channels (which were created around March
-2018).
+wallet, and the age of the earliest channels.
 
 The set of arguments for each of the backend modes is as follows:
 
-## btcd Options
+## grsd Options
 ```
-btcd:
-      --btcd.dir=                                             The base directory that contains the node's data, logs, configuration file, etc. (default: /Users/roasbeef/Library/Application Support/Btcd)
-      --btcd.rpchost=                                         The daemon's rpc listening address. If a port is omitted, then the default port for the selected chain parameters will be used. (default: localhost)
-      --btcd.rpcuser=                                         Username for RPC connections
-      --btcd.rpcpass=                                         Password for RPC connections
-      --btcd.rpccert=                                         File containing the daemon's certificate file (default: /Users/roasbeef/Library/Application Support/Btcd/rpc.cert)
-      --btcd.rawrpccert=                                      The raw bytes of the daemon's PEM-encoded certificate chain which will be used to authenticate the RPC connection.
+grsd:
+      --grsd.dir=                                             The base directory that contains the node's data, logs, configuration file, etc. (default: /Users/roasbeef/Library/Application Support/grsd)
+      --grsd.rpchost=                                         The daemon's rpc listening address. If a port is omitted, then the default port for the selected chain parameters will be used. (default: localhost)
+      --grsd.rpcuser=                                         Username for RPC connections
+      --grsd.rpcpass=                                         Password for RPC connections
+      --grsd.rpccert=                                         File containing the daemon's certificate file (default: /Users/roasbeef/Library/Application Support/grsd/rpc.cert)
+      --grsd.rawrpccert=                                      The raw bytes of the daemon's PEM-encoded certificate chain which will be used to authenticate the RPC connection.
 ```
 
 ## Neutrino Options
@@ -196,41 +195,35 @@ neutrino:
       --neutrino.banthreshold=                                Maximum allowed ban score before disconnecting and banning misbehaving peers.
 ```
 
-## Bitcoind Options
+## groestlcoind Options
 ```
-bitcoind:
-      --bitcoind.dir=                                         The base directory that contains the node's data, logs, configuration file, etc. (default: /Users/roasbeef/Library/Application Support/Bitcoin)
-      --bitcoind.rpchost=                                     The daemon's rpc listening address. If a port is omitted, then the default port for the selected chain parameters will be used. (default: localhost)
-      --bitcoind.rpcuser=                                     Username for RPC connections
-      --bitcoind.rpcpass=                                     Password for RPC connections
-      --bitcoind.zmqpubrawblock=                              The address listening for ZMQ connections to deliver raw block notifications
-      --bitcoind.zmqpubrawtx=                                 The address listening for ZMQ connections to deliver raw transaction notifications
-```
-
-## Using btcd
-
-### Installing btcd
-
-On FreeBSD, use gmake instead of make.
-
-To install btcd, run the following commands:
-
-Install **btcd**:
-```
-make btcd
+groestlcoind:
+      --groestlcoind.dir=                                         The base directory that contains the node's data, logs, configuration file, etc. (default: /Users/roasbeef/Library/Application Support/Groestlcoin)
+      --groestlcoind.rpchost=                                     The daemon's rpc listening address. If a port is omitted, then the default port for the selected chain parameters will be used. (default: localhost)
+      --groestlcoind.rpcuser=                                     Username for RPC connections
+      --groestlcoind.rpcpass=                                     Password for RPC connections
+      --groestlcoind.zmqpubrawblock=                              The address listening for ZMQ connections to deliver raw block notifications
+      --groestlcoind.zmqpubrawtx=                                 The address listening for ZMQ connections to deliver raw transaction notifications
 ```
 
-Alternatively, you can install [`btcd` directly from its
-repo](https://github.com/btcsuite/btcd).
+## Using grsd
 
-### Starting btcd
+### Installing grsd
 
-Running the following command will create `rpc.cert` and default `btcd.conf`.
+You can download the latest `grsd` binaries
+[here](https://github.com/Groestlcoin/grsd/releases).
+
+Alternative, to build `grsd` yourself, please follow the instructions in
+[`grsd` repo](https://github.com/Groestlcoin/grsd).
+
+### Starting grsd
+
+Running the following command will create `rpc.cert` and default `grsd.conf`.
 
 ```
-btcd --testnet --rpcuser=REPLACEME --rpcpass=REPLACEME
+grsd --testnet --rpcuser=REPLACEME --rpcpass=REPLACEME
 ```
-If you want to use `lnd` on testnet, `btcd` needs to first fully sync the
+If you want to use `lnd` on testnet, `grsd` needs to first fully sync the
 testnet blockchain. Depending on your hardware, this may take up to a few
 hours. Note that adding `--txindex` is optional, as it will take longer to sync
 the node, but then `lnd` will generally operate faster as it can hit the index
@@ -238,10 +231,10 @@ directly, rather than scanning blocks or BIP 158 filters for relevant items.
 
 (NOTE: It may take several minutes to find segwit-enabled peers.)
 
-While `btcd` is syncing you can check on its progress using btcd's `getinfo`
+While `grsd` is syncing you can check on its progress using grsd's `getinfo`
 RPC command:
 ```
-btcctl --testnet --rpcuser=REPLACEME --rpcpass=REPLACEME getinfo
+grsctl --testnet --rpcuser=REPLACEME --rpcpass=REPLACEME getinfo
 {
   "version": 120000,
   "protocolversion": 70002,
@@ -256,22 +249,22 @@ btcctl --testnet --rpcuser=REPLACEME --rpcpass=REPLACEME getinfo
 }
 ```
 
-Additionally, you can monitor btcd's logs to track its syncing progress in real
+Additionally, you can monitor grsd's logs to track its syncing progress in real
 time.
 
-You can test your `btcd` node's connectivity using the `getpeerinfo` command:
+You can test your `grsd` node's connectivity using the `getpeerinfo` command:
 ```
-btcctl --testnet --rpcuser=REPLACEME --rpcpass=REPLACEME getpeerinfo | more
+grsctl --testnet --rpcuser=REPLACEME --rpcpass=REPLACEME getpeerinfo | more
 ```
 
-### Running lnd using the btcd backend
+### Running lnd using the grsd backend
 
-If you are on testnet, run this command after `btcd` has finished syncing.
-Otherwise, replace `--bitcoin.testnet` with `--bitcoin.simnet`. If you are
+If you are on testnet, run this command after `grsd` has finished syncing.
+Otherwise, replace `--groestlcoin.testnet` with `--groestlcoin.simnet`. If you are
 installing `lnd` in preparation for the
 [tutorial](https://dev.lightning.community/tutorial), you may skip this step.
 ```
-lnd --bitcoin.active --bitcoin.testnet --debuglevel=debug --btcd.rpcuser=kek --btcd.rpcpass=kek --externalip=X.X.X.X
+lnd --groestlcoin.testnet --debuglevel=debug --grsd.rpcuser=kek --grsd.rpcpass=kek --externalip=X.X.X.X
 ```
 
 ## Using Neutrino
@@ -284,43 +277,36 @@ mode.  A public instance of such a node can be found at
 `faucet.lightning.community`.
 
 To run lnd in neutrino mode, run `lnd` with the following arguments, (swapping
-in `--bitcoin.simnet` if needed), and also your own `btcd` node if available:
+in `--groestlcoin.simnet` if needed), and also your own `grsd` node if available:
 ```
-lnd --bitcoin.active --bitcoin.testnet --debuglevel=debug --bitcoin.node=neutrino --neutrino.connect=faucet.lightning.community
+lnd --groestlcoin.testnet --debuglevel=debug --groestlcoin.node=neutrino --neutrino.connect=grsd-testnet.groestlcoin.org
 ```
 
 
-## Using bitcoind or litecoind
+## Using groestlcoind
 
-The configuration for bitcoind and litecoind are nearly identical, the
-following steps can be mirrored with loss of generality to enable a litecoind
-backend.  Setup will be described in regards to `bitcoind`, but note that `lnd`
-uses a distinct `litecoin.node=litecoind` argument and analogous
-subconfigurations prefixed by `litecoind`. Note that adding `--txindex` is
+Note that adding `--txindex` is
 optional, as it will take longer to sync the node, but then `lnd` will
 generally operate faster as it can hit the index directly, rather than scanning
 blocks or BIP 158 filters for relevant items.
 
-To configure your bitcoind backend for use with lnd, first complete and verify
+To configure your groestlcoind backend for use with lnd, first complete and verify
 the following:
 
 - Since `lnd` uses
   [ZeroMQ](https://github.com/bitcoin/bitcoin/blob/master/doc/zmq.md) to
-  interface with `bitcoind`, *your `bitcoind` installation must be compiled with
-  ZMQ*. Note that if you installed `bitcoind` from source and ZMQ was not present, 
+  interface with `groestlcoind`, *your `groestlcoind` installation must be compiled with
+  ZMQ*. Note that if you installed `groestlcoind` from source and ZMQ was not present, 
   then ZMQ support will be disabled, and `lnd` will quit on a `connection refused` error. 
-  If you installed `bitcoind` via Homebrew in the past ZMQ may not be included 
-  ([this has now been fixed](https://github.com/Homebrew/homebrew-core/pull/23088) 
-  in the latest Homebrew recipe for bitcoin)
-- Configure the `bitcoind` instance for ZMQ with `--zmqpubrawblock` and
+- Configure the `groestlcoind` instance for ZMQ with `--zmqpubrawblock` and
   `--zmqpubrawtx`. These options must each use their own unique address in order
   to provide a reliable delivery of notifications (e.g.
   `--zmqpubrawblock=tcp://127.0.0.1:28332` and
   `--zmqpubrawtx=tcp://127.0.0.1:28333`).
-- Start `bitcoind` running against testnet, and let it complete a full sync with
-  the testnet chain (alternatively, use `--bitcoind.regtest` instead).
+- Start `groestlcoind` running against testnet, and let it complete a full sync with
+  the testnet chain (alternatively, use `--groestlcoind.regtest` instead).
 
-Here's a sample `bitcoin.conf` for use with lnd:
+Here's a sample `groestlcoin.conf` for use with lnd:
 ```
 testnet=1
 server=1
@@ -329,39 +315,39 @@ zmqpubrawblock=tcp://127.0.0.1:28332
 zmqpubrawtx=tcp://127.0.0.1:28333
 ```
 
-Once all of the above is complete, and you've confirmed `bitcoind` is fully
+Once all of the above is complete, and you've confirmed `groestlcoind` is fully
 updated with the latest blocks on testnet, run the command below to launch
-`lnd` with `bitcoind` as your backend (as with `bitcoind`, you can create an
+`lnd` with `groestlcoind` as your backend (as with `groestlcoind`, you can create an
 `lnd.conf` to save these options, more info on that is described further
 below):
 
 ```
-lnd --bitcoin.active --bitcoin.testnet --debuglevel=debug --bitcoin.node=bitcoind --bitcoind.rpcuser=REPLACEME --bitcoind.rpcpass=REPLACEME --bitcoind.zmqpubrawblock=tcp://127.0.0.1:28332 --bitcoind.zmqpubrawtx=tcp://127.0.0.1:28333 --externalip=X.X.X.X
+lnd --groestlcoin.testnet --debuglevel=debug --groestlcoin.node=groestlcoind --groestlcoind.rpcuser=REPLACEME --groestlcoind.rpcpass=REPLACEME --groestlcoind.zmqpubrawblock=tcp://127.0.0.1:28332 --groestlcoind.zmqpubrawtx=tcp://127.0.0.1:28333 --externalip=X.X.X.X
 ```
 
 *NOTE:*
 - The auth parameters `rpcuser` and `rpcpass` parameters can typically be
-  determined by `lnd` for a `bitcoind` instance running under the same user,
+  determined by `lnd` for a `groestlcoind` instance running under the same user,
   including when using cookie auth. In this case, you can exclude them from the
   `lnd` options entirely.
 - If you DO choose to explicitly pass the auth parameters in your `lnd.conf` or
-  command line options for `lnd` (`bitcoind.rpcuser` and `bitcoind.rpcpass` as
+  command line options for `lnd` (`groestlcoind.rpcuser` and `groestlcoind.rpcpass` as
   shown in example command above), you must also specify the
-  `bitcoind.zmqpubrawblock` and `bitcoind.zmqpubrawtx` options. Otherwise, `lnd`
-  will attempt to get the configuration from your `bitcoin.conf`.
-- You must ensure the same addresses are used for the `bitcoind.zmqpubrawblock`
-  and `bitcoind.zmqpubrawtx` options passed to `lnd` as for the `zmqpubrawblock`
-  and `zmqpubrawtx` passed in the `bitcoind` options respectively.
-- When running lnd and bitcoind on the same Windows machine, ensure you use
+  `groestlcoind.zmqpubrawblock` and `groestlcoind.zmqpubrawtx` options. Otherwise, `lnd`
+  will attempt to get the configuration from your `groestlcoin.conf`.
+- You must ensure the same addresses are used for the `groestlcoind.zmqpubrawblock`
+  and `groestlcoind.zmqpubrawtx` options passed to `lnd` as for the `zmqpubrawblock`
+  and `zmqpubrawtx` passed in the `groestlcoind` options respectively.
+- When running lnd and groestlcoind on the same Windows machine, ensure you use
   127.0.0.1, not localhost, for all configuration options that require a TCP/IP
   host address.  If you use "localhost" as the host name, you may see extremely
-  slow inter-process-communication between lnd and the bitcoind backend.  If lnd
+  slow inter-process-communication between lnd and the groestlcoind backend.  If lnd
   is experiencing this issue, you'll see "Waiting for chain backend to finish
   sync, start_height=XXXXXX" as the last entry in the console or log output, and
   lnd will appear to hang.  Normal lnd output will quickly show multiple
-  messages like this as lnd consumes blocks from bitcoind.
-- Don't connect more than two or three instances of `lnd` to `bitcoind`. With
-  the default `bitcoind` settings, having more than one instance of `lnd`, or
+  messages like this as lnd consumes blocks from groestlcoind.
+- Don't connect more than two or three instances of `lnd` to `groestlcoind`. With
+  the default `groestlcoind` settings, having more than one instance of `lnd`, or
   `lnd` plus any application that consumes the RPC could cause `lnd` to miss
   crucial updates from the backend.
 
@@ -389,7 +375,7 @@ Github](https://github.com/lightningnetwork/lnd/issues/20).
 Running `lnd` for the first time will by default generate the `admin.macaroon`,
 `read_only.macaroon`, and `macaroons.db` files that are used to authenticate
 into `lnd`. They will be stored in the network directory (default:
-`lnddir/data/chain/bitcoin/mainnet`) so that it's possible to use a distinct
+`lnddir/data/chain/groestlcoin/mainnet`) so that it's possible to use a distinct
 password for mainnet, testnet, simnet, etc. Note that if you specified an
 alternative data directory (via the `--datadir` argument), you will have to
 additionally pass the updated location of the `admin.macaroon` file into `lncli`
@@ -408,11 +394,11 @@ reachable IP address.
 # Simnet vs. Testnet Development
 
 If you are doing local development, such as for the tutorial, you'll want to
-start both `btcd` and `lnd` in the `simnet` mode. Simnet is similar to regtest
+start both `grsd` and `lnd` in the `simnet` mode. Simnet is similar to regtest
 in that you'll be able to instantly mine blocks as needed to test `lnd`
 locally. In order to start either daemon in the `simnet` mode use `simnet`
-instead of `testnet`, adding the `--bitcoin.simnet` flag instead of the
-`--bitcoin.testnet` flag.
+instead of `testnet`, adding the `--groestlcoin.simnet` flag instead of the
+`--groestlcoin.testnet` flag.
 
 Another relevant command line flag for local testing of new `lnd` developments
 is the `--debughtlc` flag. When starting `lnd` with this flag, it'll be able to
@@ -422,37 +408,35 @@ To send this "special" HTLC type, include the `--debugsend` command at the end
 of your `sendpayment` commands.
 
 
-There are currently two primary ways to run `lnd`: one requires a local `btcd`
+There are currently two primary ways to run `lnd`: one requires a local `grsd`
 instance with the RPC service exposed, and the other uses a fully integrated
-light client powered by [neutrino](https://github.com/lightninglabs/neutrino).
+light client powered by [neutrino](https://github.com/Groestlcoin/neutrino).
 
 # Creating an lnd.conf (Optional)
 
 Optionally, if you'd like to have a persistent configuration between `lnd`
-launches, allowing you to simply type `lnd --bitcoin.testnet --bitcoin.active`
+launches, allowing you to simply type `lnd --groestlcoin.testnet --groestlcoin.active`
 at the command line, you can create an `lnd.conf`.
 
 **On MacOS, located at:**
-`/Users/[username]/Library/Application Support/Lnd/lnd.conf`
+`/Users/[username]/Library/Application Support/Lnd-grs/lnd.conf`
 
 **On Linux, located at:**
-`~/.lnd/lnd.conf`
+`~/.lnd-grs/lnd.conf`
 
-Here's a sample `lnd.conf` for `btcd` to get you started:
+Here's a sample `lnd.conf` for `grsd` to get you started:
 ```
 [Application Options]
 debuglevel=trace
 maxpendingchannels=10
 
-[Bitcoin]
-bitcoin.active=1
+[Groestlcoin]
+groestlcoin.active=1
 ```
 
-Notice the `[Bitcoin]` section. This section houses the parameters for the
-Bitcoin chain. `lnd` also supports Litecoin testnet4 (but not both BTC and LTC
-at the same time), so when working with Litecoin be sure to set to parameters
-for Litecoin accordingly. See a more detailed sample config file available
-[here](https://github.com/lightningnetwork/lnd/blob/master/sample-lnd.conf)
-and explore the other sections for node configuration, including `[Btcd]`,
-`[Bitcoind]`, `[Neutrino]`, `[Ltcd]`, and `[Litecoind]` depending on which
+Notice the `[Groestlcoin]` section. This section houses the parameters for the
+Groestlcoin chain.  See a more detailed sample config file available
+[here](https://github.com/Groestlcoin/lnd/blob/master/sample-lnd.conf)
+and explore the other sections for node configuration, including `[Grsd]`,
+`[Groestlcoind]` and `[Neutrino]` depending on which
 chain and node type you're using.

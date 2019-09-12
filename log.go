@@ -76,7 +76,7 @@ var (
 	brarLog = build.NewSubLogger("BRAR", backendLog.Logger)
 	cmgrLog = build.NewSubLogger("CMGR", backendLog.Logger)
 	crtrLog = build.NewSubLogger("CRTR", backendLog.Logger)
-	btcnLog = build.NewSubLogger("BTCN", backendLog.Logger)
+	btcnLog = build.NewSubLogger("GRSN", backendLog.Logger)
 	atplLog = build.NewSubLogger("ATPL", backendLog.Logger)
 	cnctLog = build.NewSubLogger("CNCT", backendLog.Logger)
 	sphxLog = build.NewSubLogger("SPHX", backendLog.Logger)
@@ -153,7 +153,7 @@ var subsystemLoggers = map[string]btclog.Logger{
 	"BRAR": brarLog,
 	"CMGR": cmgrLog,
 	"CRTR": crtrLog,
-	"BTCN": btcnLog,
+	"GRSN": btcnLog,
 	"ATPL": atplLog,
 	"CNCT": cnctLog,
 	"SPHX": sphxLog,

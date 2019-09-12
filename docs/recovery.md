@@ -149,8 +149,8 @@ In `lnd`'s logs, you should see something along the lines of (irrelevant lines s
 [INF] LNWL: Opened wallet
 [INF] LTND: Wallet recovery mode enabled with address lookahead of 2500 addresses
 [INF] LNWL: RECOVERY MODE ENABLED -- rescanning for used addresses with recovery_window=2500
-[INF] CHBU: Updating backup file at test_lnd3/data/chain/bitcoin/simnet/channel.backup
-[INF] CHBU: Swapping old multi backup file from test_lnd3/data/chain/bitcoin/simnet/temp-dont-use.backup to test_lnd3/data/chain/bitcoin/simnet/channel.backup
+[INF] CHBU: Updating backup file at test_lnd3/data/chain/groestlcoin/simnet/channel.backup
+[INF] CHBU: Swapping old multi backup file from test_lnd3/data/chain/groestlcoin/simnet/temp-dont-use.backup to test_lnd3/data/chain/groestlcoin/simnet/channel.backup
 [INF] LNWL: Seed birthday surpassed, starting recovery of wallet from height=748 hash=3032830c812a4a6ea305d8ead13b52e9e69d6400ff3c997970b6f76fbc770920 with recovery-window=2500
 [INF] LNWL: Scanning 1 blocks for recoverable addresses
 [INF] LNWL: Recovered addresses from blocks 748-748
@@ -183,10 +183,12 @@ The recovery methods described above assume a clean slate for a node, so
 there's no existing UTXO or key data in the node's database. However, there're
 times when an _existing_ node may want to _manually_ rescan the chain. We have
 a tool for that! The tool is called
-[`dropwtxmgr`](https://github.com/btcsuite/btcwallet/tree/master/cmd/dropwtxmgr).
+[`dropwtxmgr`](https://github.com/Groestlcoin/grswallet/tree/grssuite/cmd/dropwtxmgr).
 It can be installed with the following command:
 ```
-⛰  go get -v -u github.com/btcsuite/btcwallet/cmd/dropwtxmgr
+⛰  git clone https://github.com/Groestlcoin/grswallet/
+⛰  cd grswallet
+⛰  make build-all
 ```
 
 The `dropwtxmgr` tool will _reset_ the best synced height of the wallet back to
@@ -194,8 +196,8 @@ its birthday, or genesis if the birthday isn't known (for some older wallets).
 In order to run the tool, you must first **shutdown `lnd`**. Once `lnd` is
 shutdown, the rescan can be initiated with the following commands:
 ```
-⛰  cp $HOME/.lnd/data/chain/bitcoin/mainnet/wallet.db $HOME/wallet.db # Copy the existing databse just in case!
-⛰  dropwtxmgr --db=$HOME/.lnd/data/chain/bitcoin/mainnet/wallet.db
+⛰  cp $HOME/.lnd-grs/data/chain/groestlcoin/mainnet/wallet.db $HOME/wallet.db # Copy the existing databse just in case!
+⛰  dropwtxmgr --db=$HOME/.lnd-grs/data/chain/groestlcoin/mainnet/wallet.db
 ```
 
 Once the above command returns (if it hangs for a while, then `lnd` may not
@@ -245,7 +247,7 @@ closed, this file is updated on disk in a safe manner (atomic file rename). As
 a result, unlike the `channel.db` file, it's _always_ safe to copy this file
 for backup at ones desired location. The default location on Linux is: 
 ```
-~/.lnd/data/chain/bitcoin/mainnet/channel.backup
+~/.lnd-grs/data/chain/groestlcoin/mainnet/channel.backup
 ```
 
 An example of using file system level notification to [copy the backup to a

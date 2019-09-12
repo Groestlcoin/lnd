@@ -26,7 +26,7 @@ Official instructions to install the latest release of Tor can be found
 
 **NOTE**: This documentation covers how to ensure that `lnd`'s _Lightning
 protocol traffic_ is tunneled over Tor. Users must ensure that when also running
-a Bitcoin full-node, that it is also proxying all traffic over Tor. If using the
+a Groestlcoin full-node, that it is also proxying all traffic over Tor. If using the
 `neutrino` backend for `lnd`, then it will automatically also default to Tor
 usage if active within `lnd`.
 

@@ -61,3 +61,14 @@ replace github.com/lightningnetwork/lnd/queue => ./queue
 replace git.schwanenlied.me/yawning/bsaes.git => github.com/Yawning/bsaes v0.0.0-20180720073208-c0276d75487e
 
 go 1.12
+
+replace (
+	github.com/btcsuite/btcd => github.com/Groestlcoin/grsd v0.20.0-grs
+	github.com/btcsuite/btcutil => github.com/Groestlcoin/grsutil v0.5.0-grsd-0-8
+	github.com/btcsuite/btcwallet => github.com/Groestlcoin/grswallet v0.10.0-grs
+	github.com/btcsuite/btcwallet/wallet/txauthor => github.com/Groestlcoin/grswallet/wallet/txauthor v1.0.0-grs
+	github.com/btcsuite/btcwallet/wallet/txrules => github.com/Groestlcoin/grswallet/wallet/txrules v1.0.0-grs
+	github.com/btcsuite/btcwallet/walletdb => github.com/Groestlcoin/grswallet/walletdb v1.1.0-grs
+	github.com/btcsuite/btcwallet/wtxmgr => github.com/Groestlcoin/grswallet/wtxmgr v1.0.0-grs
+	github.com/lightninglabs/neutrino => github.com/Groestlcoin/neutrino v0.10.0-grs
+)

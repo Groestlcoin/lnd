@@ -98,7 +98,7 @@ const (
 func (c chainCode) String() string {
 	switch c {
 	case bitcoinChain:
-		return "bitcoin"
+		return "groestlcoin"
 	case litecoinChain:
 		return "litecoin"
 	default:
@@ -202,7 +202,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 	// If spv mode is active, then we'll be using a distinct set of
 	// chainControl interfaces that interface directly with the p2p network
 	// of the selected chain.
-	switch homeChainConfig.Node {
+	switch homeChainConfig.NodeT {
 	case "neutrino":
 		// We'll create ChainNotifier and FilteredChainView instances,
 		// along with the wallet's ChainSource, which are all backed by
@@ -236,7 +236,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 			activeNetParams.Params, neutrinoCS,
 		)
 
-	case "bitcoind", "litecoind":
+	case "groestlcoind", "litecoind":
 		var bitcoindMode *bitcoindConfig
 		switch {
 		case cfg.Bitcoin.Active:
@@ -261,7 +261,13 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 			if err != nil {
 				return nil, err
 			}
-			rpcPort -= 2
+			if cfg.Bitcoin.Active {
+				if cfg.Bitcoin.MainNet {
+					rpcPort = 1441
+				} else {
+					rpcPort = 17766
+				}
+			}
 			bitcoindHost = fmt.Sprintf("%v:%d",
 				bitcoindMode.RPCHost, rpcPort)
 			if (cfg.Bitcoin.Active && cfg.Bitcoin.RegTest) ||
@@ -269,7 +275,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 				conn, err := net.Dial("tcp", bitcoindHost)
 				if err != nil || conn == nil {
 					if cfg.Bitcoin.Active && cfg.Bitcoin.RegTest {
-						rpcPort = 18443
+						rpcPort = 17766
 					} else if cfg.Litecoin.Active && cfg.Litecoin.RegTest {
 						rpcPort = 19443
 					}
@@ -295,7 +301,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 		}
 
 		if err := bitcoindConn.Start(); err != nil {
-			return nil, fmt.Errorf("unable to connect to bitcoind: "+
+			return nil, fmt.Errorf("unable to connect to groestlcoind: "+
 				"%v", err)
 		}
 
@@ -317,7 +323,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 			HTTPPostMode:         true,
 		}
 		if cfg.Bitcoin.Active && !cfg.Bitcoin.RegTest {
-			ltndLog.Infof("Initializing bitcoind backed fee estimator")
+			ltndLog.Infof("Initializing groestlcoind backed fee estimator")
 
 			// Finally, we'll re-initialize the fee estimator, as
 			// if we're using bitcoind as a backend, then we can
@@ -351,7 +357,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 				return nil, err
 			}
 		}
-	case "btcd", "ltcd":
+	case "grsd", "ltcd":
 		// Otherwise, we'll be speaking directly via RPC to a node.
 		//
 		// So first we'll load btcd/ltcd's TLS cert for the RPC
@@ -439,7 +445,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 		if !cfg.Bitcoin.SimNet && !cfg.Litecoin.SimNet &&
 			!cfg.Bitcoin.RegTest && !cfg.Litecoin.RegTest {
 
-			ltndLog.Infof("Initializing btcd backed fee estimator")
+			ltndLog.Infof("Initializing grsd backed fee estimator")
 
 			// Finally, we'll re-initialize the fee estimator, as
 			// if we're using btcd as a backend, then we can use
@@ -458,7 +464,7 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB,
 		}
 	default:
 		return nil, fmt.Errorf("unknown node type: %s",
-			homeChainConfig.Node)
+			homeChainConfig.NodeT)
 	}
 
 	wc, err := btcwallet.New(*walletConfig)
@@ -517,18 +523,18 @@ var (
 	// bitcoinTestnetGenesis is the genesis hash of Bitcoin's testnet
 	// chain.
 	bitcoinTestnetGenesis = chainhash.Hash([chainhash.HashSize]byte{
-		0x43, 0x49, 0x7f, 0xd7, 0xf8, 0x26, 0x95, 0x71,
-		0x08, 0xf4, 0xa3, 0x0f, 0xd9, 0xce, 0xc3, 0xae,
-		0xba, 0x79, 0x97, 0x20, 0x84, 0xe9, 0x0e, 0xad,
-		0x01, 0xea, 0x33, 0x09, 0x00, 0x00, 0x00, 0x00,
+		0x36, 0xcd, 0xf2, 0xdc, 0xb7, 0x55, 0x62, 0x87,
+		0x28, 0x2a, 0x05, 0xc0, 0x64, 0x01, 0x23, 0x23,
+		0xba, 0xe6, 0x63, 0xc1, 0x6e, 0xd3, 0xcd, 0x98,
+		0x98, 0xfc, 0x50, 0xbb, 0xff, 0x00, 0x00, 0x00,
 	})
 
 	// bitcoinMainnetGenesis is the genesis hash of Bitcoin's main chain.
 	bitcoinMainnetGenesis = chainhash.Hash([chainhash.HashSize]byte{
-		0x6f, 0xe2, 0x8c, 0x0a, 0xb6, 0xf1, 0xb3, 0x72,
-		0xc1, 0xa6, 0xa2, 0x46, 0xae, 0x63, 0xf7, 0x4f,
-		0x93, 0x1e, 0x83, 0x65, 0xe1, 0x5a, 0x08, 0x9c,
-		0x68, 0xd6, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x23, 0x90, 0x63, 0x3b, 0x70, 0xf0, 0x62, 0xcb,
+		0x3a, 0x3d, 0x68, 0x14, 0xb6, 0x7e, 0x29, 0xa8,
+		0x0d, 0x9d, 0x75, 0x81, 0xdb, 0x0b, 0xcc, 0x49,
+		0x4d, 0x59, 0x7c, 0x92, 0xc5, 0x0a, 0x00, 0x00,
 	})
 
 	// litecoinTestnetGenesis is the genesis hash of Litecoin's testnet4
@@ -573,18 +579,18 @@ var (
 	chainDNSSeeds = map[chainhash.Hash][][2]string{
 		bitcoinMainnetGenesis: {
 			{
-				"nodes.lightning.directory",
-				"soa.nodes.lightning.directory",
+				"lseed1.groestlcoin.org",
+				"soa.lseed1.groestlcoin.org",
 			},
 			{
-				"lseed.bitcoinstats.com",
+				"lseed2.groestlcoin.org",
+				"soa.lseed2.groestlcoin.org",
 			},
 		},
-
 		bitcoinTestnetGenesis: {
 			{
-				"test.nodes.lightning.directory",
-				"soa.nodes.lightning.directory",
+				"testnet-lseed1.groestlcoin.org",
+				"soa.testnet-lseed1.groestlcoin.org",
 			},
 		},
 
