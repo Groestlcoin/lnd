@@ -5,10 +5,10 @@ require (
 	github.com/NebulousLabs/fastrand v0.0.0-20181203155948-6fb6489aac4e // indirect
 	github.com/NebulousLabs/go-upnp v0.0.0-20180202185039-29b680b06c82
 	github.com/Yawning/aez v0.0.0-20180114000226-4dad034d9db2
-	github.com/btcsuite/btcd v0.20.0-beta
+	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
-	github.com/btcsuite/btcwallet v0.10.0
+	github.com/btcsuite/btcwallet v0.11.0
 	github.com/btcsuite/btcwallet/wallet/txauthor v1.0.0
 	github.com/btcsuite/btcwallet/wallet/txrules v1.0.0
 	github.com/btcsuite/btcwallet/walletdb v1.1.0
@@ -33,7 +33,7 @@ require (
 	github.com/juju/utils v0.0.0-20180820210520-bf9cc5bdd62d // indirect
 	github.com/juju/version v0.0.0-20180108022336-b64dbd566305 // indirect
 	github.com/kkdai/bstream v0.0.0-20181106074824-b3251f7901ec
-	github.com/lightninglabs/neutrino v0.10.0
+	github.com/lightninglabs/neutrino v0.11.0
 	github.com/lightningnetwork/lightning-onion v0.0.0-20190909101754-850081b08b6a
 	github.com/lightningnetwork/lnd/queue v1.0.1
 	github.com/lightningnetwork/lnd/ticker v1.0.0
@@ -63,12 +63,12 @@ replace git.schwanenlied.me/yawning/bsaes.git => github.com/Yawning/bsaes v0.0.0
 go 1.12
 
 replace (
-	github.com/btcsuite/btcd => github.com/Groestlcoin/grsd v0.20.0-grs
+	github.com/btcsuite/btcd => github.com/Groestlcoin/grsd v0.20.1-grs
 	github.com/btcsuite/btcutil => github.com/Groestlcoin/grsutil v0.5.0-grsd-0-8
-	github.com/btcsuite/btcwallet => github.com/Groestlcoin/grswallet v0.10.0-grs
+	github.com/btcsuite/btcwallet => github.com/Groestlcoin/grswallet v0.11.0-grs
 	github.com/btcsuite/btcwallet/wallet/txauthor => github.com/Groestlcoin/grswallet/wallet/txauthor v1.0.0-grs
 	github.com/btcsuite/btcwallet/wallet/txrules => github.com/Groestlcoin/grswallet/wallet/txrules v1.0.0-grs
 	github.com/btcsuite/btcwallet/walletdb => github.com/Groestlcoin/grswallet/walletdb v1.1.0-grs
 	github.com/btcsuite/btcwallet/wtxmgr => github.com/Groestlcoin/grswallet/wtxmgr v1.0.0-grs
-	github.com/lightninglabs/neutrino => github.com/Groestlcoin/neutrino v0.10.0-grs
+	github.com/lightninglabs/neutrino => github.com/Groestlcoin/neutrino v0.11.0-grs
 )
