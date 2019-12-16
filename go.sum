@@ -17,6 +17,8 @@ github.com/Groestlcoin/grswallet/wtxmgr v1.0.0-grs h1:cwOaJgZoZkgd2lC2RnCxzkmghq
 github.com/Groestlcoin/grswallet/wtxmgr v1.0.0-grs/go.mod h1:vc4gBprll6BP0UJ+AIGDaySoc7MdAmZf8kelfNb8CFY=
 github.com/Groestlcoin/neutrino v0.11.0-grs h1:F+acoKVuhdqDD8SQwIvM005JkZz5haxAuuppuzHymvA=
 github.com/Groestlcoin/neutrino v0.11.0-grs/go.mod h1:yeOpqDKjVM8r6B94YOKdbgBk32+DBdH8PpiWMe9LXog=
+github.com/Groestlcoin/neutrino v0.11.0-grs-r2 h1:+lgA1WMck0G2ORV8oZnCIZ4rBA120pEChgkgBDnV4UE=
+github.com/Groestlcoin/neutrino v0.11.0-grs-r2/go.mod h1:yeOpqDKjVM8r6B94YOKdbgBk32+DBdH8PpiWMe9LXog=
 github.com/NebulousLabs/fastrand v0.0.0-20181203155948-6fb6489aac4e h1:n+DcnTNkQnHlwpsrHoQtkrJIO7CBx029fw6oR4vIob4=
 github.com/NebulousLabs/fastrand v0.0.0-20181203155948-6fb6489aac4e/go.mod h1:Bdzq+51GR4/0DIhaICZEOm+OHvXGwwB2trKZ8B4Y6eQ=
 github.com/NebulousLabs/go-upnp v0.0.0-20180202185039-29b680b06c82 h1:MG93+PZYs9PyEsj/n5/haQu2gK0h4tUtSy9ejtMwWa0=

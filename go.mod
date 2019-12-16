@@ -70,5 +70,5 @@ replace (
 	github.com/btcsuite/btcwallet/wallet/txrules => github.com/Groestlcoin/grswallet/wallet/txrules v1.0.0-grs
 	github.com/btcsuite/btcwallet/walletdb => github.com/Groestlcoin/grswallet/walletdb v1.1.0-grs
 	github.com/btcsuite/btcwallet/wtxmgr => github.com/Groestlcoin/grswallet/wtxmgr v1.0.0-grs
-	github.com/lightninglabs/neutrino => github.com/Groestlcoin/neutrino v0.11.0-grs
+	github.com/lightninglabs/neutrino => github.com/Groestlcoin/neutrino v0.11.0-grs-r2
 )
