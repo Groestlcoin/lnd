@@ -9,8 +9,8 @@ RUN apk add --no-cache --update alpine-sdk \
     git \
     make \
     gcc \
-&&  git clone https://github.com/lightningnetwork/lnd /go/src/github.com/lightningnetwork/lnd \
-&&  cd /go/src/github.com/lightningnetwork/lnd \
+&&  git clone https://github.com/groestlcoin/lnd /go/src/github.com/groestlcoin/lnd \
+&&  cd /go/src/github.com/groestlcoin/lnd \
 &&  make \
 &&  make install tags="signrpc walletrpc chainrpc invoicesrpc routerrpc"
 
@@ -18,7 +18,7 @@ RUN apk add --no-cache --update alpine-sdk \
 FROM alpine as final
 
 # Define a root volume for data persistence.
-VOLUME /root/.lnd
+VOLUME /root/.lnd-grs
 
 # Add bash and ca-certs, for quality of life and SSL-related reasons.
 RUN apk --no-cache add \
