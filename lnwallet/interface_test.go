@@ -30,16 +30,19 @@ import (
 	"github.com/btcsuite/btcwallet/chain"
 	"github.com/btcsuite/btcwallet/walletdb"
 	_ "github.com/btcsuite/btcwallet/walletdb/bdb"
-	"github.com/coreos/bbolt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/lightninglabs/neutrino"
 	"github.com/lightningnetwork/lnd/chainntnfs"
 	"github.com/lightningnetwork/lnd/chainntnfs/btcdnotify"
 	"github.com/lightningnetwork/lnd/channeldb"
+	"github.com/lightningnetwork/lnd/channeldb/kvdb"
 	"github.com/lightningnetwork/lnd/input"
 	"github.com/lightningnetwork/lnd/keychain"
+	"github.com/lightningnetwork/lnd/lntest/wait"
 	"github.com/lightningnetwork/lnd/lnwallet"
 	"github.com/lightningnetwork/lnd/lnwallet/btcwallet"
+	"github.com/lightningnetwork/lnd/lnwallet/chainfee"
+	"github.com/lightningnetwork/lnd/lnwallet/chanfunding"
 	"github.com/lightningnetwork/lnd/lnwire"
 )
 
@@ -166,7 +169,7 @@ func newPkScript(t *testing.T, w *lnwallet.LightningWallet,
 // parties to send on-chain funds to each other.
 func sendCoins(t *testing.T, miner *rpctest.Harness,
 	sender, receiver *lnwallet.LightningWallet, output *wire.TxOut,
-	feeRate lnwallet.SatPerKWeight) *wire.MsgTx {
+	feeRate chainfee.SatPerKWeight) *wire.MsgTx { //nolint:unparam
 
 	t.Helper()
 
@@ -330,7 +333,7 @@ func createTestWallet(tempTestDir string, miningNode *rpctest.Harness,
 		WalletController: wc,
 		Signer:           signer,
 		ChainIO:          bio,
-		FeeEstimator:     lnwallet.NewStaticFeeEstimator(2500, 0),
+		FeeEstimator:     chainfee.NewStaticEstimator(2500, 0),
 		DefaultConstraints: channeldb.ChannelConstraints{
 			DustLimit:        500,
 			MaxPendingAmount: lnwire.NewMSatFromSatoshis(btcutil.SatoshiPerBitcoin) * 100,
@@ -511,7 +514,7 @@ func testDualFundingReservationWorkflow(miner *rpctest.Harness,
 	if !bytes.Equal(aliceChannels[0].FundingOutpoint.Hash[:], fundingSha[:]) {
 		t.Fatalf("channel state not properly saved")
 	}
-	if aliceChannels[0].ChanType != channeldb.DualFunder {
+	if !aliceChannels[0].ChanType.IsDualFunder() {
 		t.Fatalf("channel not detected as dual funder")
 	}
 	bobChannels, err := bob.Cfg.Database.FetchOpenChannels(alicePub)
@@ -521,7 +524,7 @@ func testDualFundingReservationWorkflow(miner *rpctest.Harness,
 	if !bytes.Equal(bobChannels[0].FundingOutpoint.Hash[:], fundingSha[:]) {
 		t.Fatalf("channel state not properly saved")
 	}
-	if bobChannels[0].ChanType != channeldb.DualFunder {
+	if !bobChannels[0].ChanType.IsDualFunder() {
 		t.Fatalf("channel not detected as dual funder")
 	}
 
@@ -588,6 +591,7 @@ func testFundingTransactionLockedOutputs(miner *rpctest.Harness,
 		FundingFeePerKw:  feePerKw,
 		PushMSat:         0,
 		Flags:            lnwire.FFAnnounceChannel,
+		PendingChanID:    [32]byte{0, 1, 2, 3},
 	}
 	if _, err := alice.InitChannelReservation(req); err != nil {
 		t.Fatalf("unable to initialize funding reservation 1: %v", err)
@@ -610,12 +614,13 @@ func testFundingTransactionLockedOutputs(miner *rpctest.Harness,
 		FundingFeePerKw:  feePerKw,
 		PushMSat:         0,
 		Flags:            lnwire.FFAnnounceChannel,
+		PendingChanID:    [32]byte{1, 2, 3, 4},
 	}
 	failedReservation, err := alice.InitChannelReservation(failedReq)
 	if err == nil {
 		t.Fatalf("not error returned, should fail on coin selection")
 	}
-	if _, ok := err.(*lnwallet.ErrInsufficientFunds); !ok {
+	if _, ok := err.(*chanfunding.ErrInsufficientFunds); !ok {
 		t.Fatalf("error not coinselect error: %v", err)
 	}
 	if failedReservation != nil {
@@ -646,6 +651,7 @@ func testFundingCancellationNotEnoughFunds(miner *rpctest.Harness,
 		FundingFeePerKw:  feePerKw,
 		PushMSat:         0,
 		Flags:            lnwire.FFAnnounceChannel,
+		PendingChanID:    [32]byte{2, 3, 4, 5},
 	}
 	chanReservation, err := alice.InitChannelReservation(req)
 	if err != nil {
@@ -653,8 +659,9 @@ func testFundingCancellationNotEnoughFunds(miner *rpctest.Harness,
 	}
 
 	// Attempt to create another channel with 44 BTC, this should fail.
+	req.PendingChanID = [32]byte{3, 4, 5, 6}
 	_, err = alice.InitChannelReservation(req)
-	if _, ok := err.(*lnwallet.ErrInsufficientFunds); !ok {
+	if _, ok := err.(*chanfunding.ErrInsufficientFunds); !ok {
 		t.Fatalf("coin selection succeeded should have insufficient funds: %v",
 			err)
 	}
@@ -682,6 +689,7 @@ func testFundingCancellationNotEnoughFunds(miner *rpctest.Harness,
 	// attempting coin selection.
 
 	// Request to fund a new channel should now succeed.
+	req.PendingChanID = [32]byte{4, 5, 6, 7, 8}
 	if _, err := alice.InitChannelReservation(req); err != nil {
 		t.Fatalf("unable to initialize funding reservation: %v", err)
 	}
@@ -698,7 +706,8 @@ func testCancelNonExistentReservation(miner *rpctest.Harness,
 	// Create our own reservation, give it some ID.
 	res, err := lnwallet.NewChannelReservation(
 		10000, 10000, feePerKw, alice, 22, 10, &testHdSeed,
-		lnwire.FFAnnounceChannel, true,
+		lnwire.FFAnnounceChannel, lnwallet.CommitmentTypeTweakless,
+		nil, [32]byte{}, 0,
 	)
 	if err != nil {
 		t.Fatalf("unable to create res: %v", err)
@@ -723,7 +732,7 @@ func testReservationInitiatorBalanceBelowDustCancel(miner *rpctest.Harness,
 		t.Fatalf("unable to create amt: %v", err)
 	}
 
-	feePerKw := lnwallet.SatPerKWeight(
+	feePerKw := chainfee.SatPerKWeight(
 		numBTC * numBTC * btcutil.SatoshiPerBitcoin,
 	)
 	req := &lnwallet.InitFundingReserveMsg{
@@ -736,7 +745,7 @@ func testReservationInitiatorBalanceBelowDustCancel(miner *rpctest.Harness,
 		FundingFeePerKw:  1000,
 		PushMSat:         0,
 		Flags:            lnwire.FFAnnounceChannel,
-		Tweakless:        true,
+		CommitType:       lnwallet.CommitmentTypeTweakless,
 	}
 	_, err = alice.InitChannelReservation(req)
 	switch {
@@ -791,7 +800,10 @@ func assertContributionInitPopulated(t *testing.T, c *lnwallet.ChannelContributi
 }
 
 func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
-	alice, bob *lnwallet.LightningWallet, t *testing.T, tweakless bool) {
+	alice, bob *lnwallet.LightningWallet, t *testing.T,
+	commitType lnwallet.CommitmentType,
+	aliceChanFunder chanfunding.Assembler, fetchFundingTx func() *wire.MsgTx,
+	pendingChanID [32]byte, thawHeight uint32) {
 
 	// For this scenario, Alice will be the channel initiator while bob
 	// will act as the responder to the workflow.
@@ -810,6 +822,7 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 	}
 	aliceReq := &lnwallet.InitFundingReserveMsg{
 		ChainHash:        chainHash,
+		PendingChanID:    pendingChanID,
 		NodeID:           bobPub,
 		NodeAddr:         bobAddr,
 		LocalFundingAmt:  fundingAmt,
@@ -818,7 +831,8 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 		FundingFeePerKw:  feePerKw,
 		PushMSat:         pushAmt,
 		Flags:            lnwire.FFAnnounceChannel,
-		Tweakless:        tweakless,
+		CommitType:       commitType,
+		ChanFunder:       aliceChanFunder,
 	}
 	aliceChanReservation, err := alice.InitChannelReservation(aliceReq)
 	if err != nil {
@@ -838,15 +852,20 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 		t.Fatalf("unable to verify constraints: %v", err)
 	}
 
-	// Verify all contribution fields have been set properly.
+	// Verify all contribution fields have been set properly, but only if
+	// Alice is the funder herself.
 	aliceContribution := aliceChanReservation.OurContribution()
-	if len(aliceContribution.Inputs) < 1 {
-		t.Fatalf("outputs for funding tx not properly selected, have %v "+
-			"outputs should at least 1", len(aliceContribution.Inputs))
-	}
-	if len(aliceContribution.ChangeOutputs) != 1 {
-		t.Fatalf("coin selection failed, should have one change outputs, "+
-			"instead have: %v", len(aliceContribution.ChangeOutputs))
+	if fetchFundingTx == nil {
+		if len(aliceContribution.Inputs) < 1 {
+			t.Fatalf("outputs for funding tx not properly "+
+				"selected, have %v outputs should at least 1",
+				len(aliceContribution.Inputs))
+		}
+		if len(aliceContribution.ChangeOutputs) != 1 {
+			t.Fatalf("coin selection failed, should have one "+
+				"change outputs, instead have: %v",
+				len(aliceContribution.ChangeOutputs))
+		}
 	}
 	assertContributionInitPopulated(t, aliceContribution)
 
@@ -854,6 +873,7 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 	// reservation initiation, then consume Alice's contribution.
 	bobReq := &lnwallet.InitFundingReserveMsg{
 		ChainHash:        chainHash,
+		PendingChanID:    pendingChanID,
 		NodeID:           alicePub,
 		NodeAddr:         aliceAddr,
 		LocalFundingAmt:  0,
@@ -862,7 +882,7 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 		FundingFeePerKw:  feePerKw,
 		PushMSat:         pushAmt,
 		Flags:            lnwire.FFAnnounceChannel,
-		Tweakless:        tweakless,
+		CommitType:       commitType,
 	}
 	bobChanReservation, err := bob.InitChannelReservation(bobReq)
 	if err != nil {
@@ -896,10 +916,11 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 
 	// At this point, Alice should have generated all the signatures
 	// required for the funding transaction, as well as Alice's commitment
-	// signature to bob.
+	// signature to bob, but only if the funding transaction was
+	// constructed internally.
 	aliceRemoteContribution := aliceChanReservation.TheirContribution()
 	aliceFundingSigs, aliceCommitSig := aliceChanReservation.OurSignatures()
-	if aliceFundingSigs == nil {
+	if fetchFundingTx == nil && aliceFundingSigs == nil {
 		t.Fatalf("funding sigs not found")
 	}
 	if aliceCommitSig == nil {
@@ -908,7 +929,7 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 
 	// Additionally, the funding tx and the funding outpoint should have
 	// been populated.
-	if aliceChanReservation.FinalFundingTx() == nil {
+	if aliceChanReservation.FinalFundingTx() == nil && fetchFundingTx == nil {
 		t.Fatalf("funding transaction never created!")
 	}
 	if aliceChanReservation.FundingOutpoint() == nil {
@@ -950,9 +971,17 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 		t.Fatalf("alice unable to complete reservation: %v", err)
 	}
 
+	// If the caller provided an alternative way to obtain the funding tx,
+	// then we'll use that. Otherwise, we'll obtain it directly from Alice.
+	var fundingTx *wire.MsgTx
+	if fetchFundingTx != nil {
+		fundingTx = fetchFundingTx()
+	} else {
+		fundingTx = aliceChanReservation.FinalFundingTx()
+	}
+
 	// The resulting active channel state should have been persisted to the
 	// DB for both Alice and Bob.
-	fundingTx := aliceChanReservation.FinalFundingTx()
 	fundingSha := fundingTx.TxHash()
 	aliceChannels, err := alice.Cfg.Database.FetchOpenChannels(bobPub)
 	if err != nil {
@@ -971,7 +1000,7 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 	}
 	if !aliceChannels[0].ChanType.IsSingleFunder() {
 		t.Fatalf("channel type is incorrect, expected %v instead got %v",
-			channeldb.SingleFunder, aliceChannels[0].ChanType)
+			channeldb.SingleFunderBit, aliceChannels[0].ChanType)
 	}
 
 	bobChannels, err := bob.Cfg.Database.FetchOpenChannels(alicePub)
@@ -991,7 +1020,7 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 	}
 	if !bobChannels[0].ChanType.IsSingleFunder() {
 		t.Fatalf("channel type is incorrect, expected %v instead got %v",
-			channeldb.SingleFunder, bobChannels[0].ChanType)
+			channeldb.SingleFunderBit, bobChannels[0].ChanType)
 	}
 
 	// Let Alice publish the funding transaction.
@@ -1020,6 +1049,24 @@ func testSingleFunderReservationWorkflow(miner *rpctest.Harness,
 	blockTx := block.Transactions[1]
 	if blockTx.TxHash() != fundingSha {
 		t.Fatalf("incorrect transaction was mined")
+	}
+
+	// If a frozen channel was requested, then we expect that both channel
+	// types show as being a frozen channel type.
+	aliceChanFrozen := aliceChannels[0].ChanType.IsFrozen()
+	bobChanFrozen := bobChannels[0].ChanType.IsFrozen()
+	if thawHeight != 0 && (!aliceChanFrozen || !bobChanFrozen) {
+		t.Fatalf("expected both alice and bob to have frozen chans: "+
+			"alice_frozen=%v, bob_frozen=%v", aliceChanFrozen,
+			bobChanFrozen)
+	}
+	if thawHeight != bobChannels[0].ThawHeight {
+		t.Fatalf("wrong thaw height: expected %v got %v", thawHeight,
+			bobChannels[0].ThawHeight)
+	}
+	if thawHeight != aliceChannels[0].ThawHeight {
+		t.Fatalf("wrong thaw height: expected %v got %v", thawHeight,
+			aliceChannels[0].ThawHeight)
 	}
 
 	assertReservationDeleted(aliceChanReservation, t)
@@ -1385,7 +1432,7 @@ func testTransactionSubscriptions(miner *rpctest.Harness,
 	// notifications when we _create_ transactions ourselves that spend our
 	// own outputs.
 	b := txscript.NewScriptBuilder()
-	b.AddOp(txscript.OP_0)
+	b.AddOp(txscript.OP_RETURN)
 	outputScript, err := b.Script()
 	if err != nil {
 		t.Fatalf("unable to make output script: %v", err)
@@ -1544,7 +1591,7 @@ func txFromOutput(tx *wire.MsgTx, signer input.Signer, fromPubKey,
 		return nil, fmt.Errorf("unable to generate signature: %v", err)
 	}
 	witness := make([][]byte, 2)
-	witness[0] = append(spendSig, byte(txscript.SigHashAll))
+	witness[0] = append(spendSig.Serialize(), byte(txscript.SigHashAll))
 	witness[1] = fromPubKey.SerializeCompressed()
 	tx1.TxIn[0].Witness = witness
 
@@ -1594,7 +1641,7 @@ func newTx(t *testing.T, r *rpctest.Harness, pubKey *btcec.PublicKey,
 	}
 
 	// Create a new unconfirmed tx that spends this output.
-	txFee := btcutil.Amount(0.1 * btcutil.SatoshiPerBitcoin)
+	txFee := btcutil.Amount(0.001 * btcutil.SatoshiPerBitcoin)
 	tx1, err := txFromOutput(
 		tx, alice.Cfg.Signer, pubKey, pubKey, txFee, rbf,
 	)
@@ -1671,7 +1718,7 @@ func testPublishTransaction(r *rpctest.Harness,
 	// We'll do the next mempool check on both RBF and non-RBF enabled
 	// transactions.
 	var (
-		txFee         = btcutil.Amount(0.05 * btcutil.SatoshiPerBitcoin)
+		txFee         = btcutil.Amount(0.005 * btcutil.SatoshiPerBitcoin)
 		tx3, tx3Spend *wire.MsgTx
 	)
 
@@ -1929,7 +1976,7 @@ func testSignOutputUsingTweaks(r *rpctest.Harness,
 			t.Fatalf("unable to generate signature: %v", err)
 		}
 		witness := make([][]byte, 2)
-		witness[0] = append(spendSig, byte(txscript.SigHashAll))
+		witness[0] = append(spendSig.Serialize(), byte(txscript.SigHashAll))
 		witness[1] = tweakedKey.SerializeCompressed()
 		sweepTx.TxIn[0].Witness = witness
 
@@ -2151,7 +2198,7 @@ func testChangeOutputSpendConfirmation(r *rpctest.Harness,
 	//
 	// TODO(wilmer): replace this once SendOutputs easily supports sending
 	// all funds in one transaction.
-	txFeeRate := lnwallet.SatPerKWeight(2500)
+	txFeeRate := chainfee.SatPerKWeight(2500)
 	txFee := btcutil.Amount(14380)
 	output := &wire.TxOut{
 		Value:    int64(aliceBalance - txFee),
@@ -2247,7 +2294,7 @@ func testLastUnusedAddr(miner *rpctest.Harness,
 		if err != nil {
 			t.Fatalf("unable to convert addr to script: %v", err)
 		}
-		feeRate := lnwallet.SatPerKWeight(2500)
+		feeRate := chainfee.SatPerKWeight(2500)
 		output := &wire.TxOut{
 			Value:    1000000,
 			PkScript: addrScript,
@@ -2281,7 +2328,7 @@ func testCreateSimpleTx(r *rpctest.Harness, w *lnwallet.LightningWallet,
 	// The test cases we will run through for all backends.
 	testCases := []struct {
 		outVals []int64
-		feeRate lnwallet.SatPerKWeight
+		feeRate chainfee.SatPerKWeight
 		valid   bool
 	}{
 		{
@@ -2522,7 +2569,9 @@ var walletTests = []walletTestCase{
 			bob *lnwallet.LightningWallet, t *testing.T) {
 
 			testSingleFunderReservationWorkflow(
-				miner, alice, bob, t, false,
+				miner, alice, bob, t,
+				lnwallet.CommitmentTypeLegacy, nil,
+				nil, [32]byte{}, 0,
 			)
 		},
 	},
@@ -2532,9 +2581,15 @@ var walletTests = []walletTestCase{
 			bob *lnwallet.LightningWallet, t *testing.T) {
 
 			testSingleFunderReservationWorkflow(
-				miner, alice, bob, t, true,
+				miner, alice, bob, t,
+				lnwallet.CommitmentTypeTweakless, nil,
+				nil, [32]byte{}, 0,
 			)
 		},
+	},
+	{
+		name: "single funding workflow external funding tx",
+		test: testSingleFunderExternalFundingTx,
 	},
 	{
 		name: "dual funder workflow",
@@ -2674,6 +2729,122 @@ func waitForWalletSync(r *rpctest.Harness, w *lnwallet.LightningWallet) error {
 	return nil
 }
 
+// testSingleFunderExternalFundingTx tests that the wallet is able to properly
+// carry out a funding flow backed by a channel point that has been crafted
+// outside the wallet.
+func testSingleFunderExternalFundingTx(miner *rpctest.Harness,
+	alice, bob *lnwallet.LightningWallet, t *testing.T) {
+
+	// First, we'll obtain multi-sig keys from both Alice and Bob which
+	// simulates them exchanging keys on a higher level.
+	aliceFundingKey, err := alice.DeriveNextKey(keychain.KeyFamilyMultiSig)
+	if err != nil {
+		t.Fatalf("unable to obtain alice funding key: %v", err)
+	}
+	bobFundingKey, err := bob.DeriveNextKey(keychain.KeyFamilyMultiSig)
+	if err != nil {
+		t.Fatalf("unable to obtain bob funding key: %v", err)
+	}
+
+	// We'll now set up for them to open a 4 BTC channel, with 1 BTC pushed
+	// to Bob's side.
+	chanAmt := 4 * btcutil.SatoshiPerBitcoin
+
+	// Simulating external funding negotiation, we'll now create the
+	// funding transaction for both parties. Utilizing existing tools,
+	// we'll create a new chanfunding.Assembler hacked by Alice's wallet.
+	aliceChanFunder := chanfunding.NewWalletAssembler(chanfunding.WalletConfig{
+		CoinSource:       lnwallet.NewCoinSource(alice),
+		CoinSelectLocker: alice,
+		CoinLocker:       alice,
+		Signer:           alice.Cfg.Signer,
+		DustLimit:        600,
+	})
+
+	// With the chan funder created, we'll now provision a funding intent,
+	// bind the keys we obtained above, and finally obtain our funding
+	// transaction and outpoint.
+	fundingIntent, err := aliceChanFunder.ProvisionChannel(&chanfunding.Request{
+		LocalAmt: btcutil.Amount(chanAmt),
+		MinConfs: 1,
+		FeeRate:  253,
+		ChangeAddr: func() (btcutil.Address, error) {
+			return alice.NewAddress(lnwallet.WitnessPubKey, true)
+		},
+	})
+	if err != nil {
+		t.Fatalf("unable to perform coin selection: %v", err)
+	}
+
+	// With our intent created, we'll instruct it to finalize the funding
+	// transaction, and also hand us the outpoint so we can simulate
+	// external crafting of the funding transaction.
+	var (
+		fundingTx *wire.MsgTx
+		chanPoint *wire.OutPoint
+	)
+	if fullIntent, ok := fundingIntent.(*chanfunding.FullIntent); ok {
+		fullIntent.BindKeys(&aliceFundingKey, bobFundingKey.PubKey)
+
+		fundingTx, err = fullIntent.CompileFundingTx(nil, nil)
+		if err != nil {
+			t.Fatalf("unable to compile funding tx: %v", err)
+		}
+		chanPoint, err = fullIntent.ChanPoint()
+		if err != nil {
+			t.Fatalf("unable to obtain chan point: %v", err)
+		}
+	} else {
+		t.Fatalf("expected full intent, instead got: %T", fullIntent)
+	}
+
+	// Now that we have the fully constructed funding transaction, we'll
+	// create a new shim external funder out of it for Alice, and prep a
+	// shim intent for Bob.
+	thawHeight := uint32(200)
+	aliceExternalFunder := chanfunding.NewCannedAssembler(
+		thawHeight, *chanPoint, btcutil.Amount(chanAmt), &aliceFundingKey,
+		bobFundingKey.PubKey, true,
+	)
+	bobShimIntent, err := chanfunding.NewCannedAssembler(
+		thawHeight, *chanPoint, btcutil.Amount(chanAmt), &bobFundingKey,
+		aliceFundingKey.PubKey, false,
+	).ProvisionChannel(&chanfunding.Request{
+		LocalAmt: btcutil.Amount(chanAmt),
+		MinConfs: 1,
+		FeeRate:  253,
+		ChangeAddr: func() (btcutil.Address, error) {
+			return bob.NewAddress(lnwallet.WitnessPubKey, true)
+		},
+	})
+	if err != nil {
+		t.Fatalf("unable to create shim intent for bob: %v", err)
+	}
+
+	// At this point, we have everything we need to carry out our test, so
+	// we'll being the funding flow between Alice and Bob.
+	//
+	// However, before we do so, we'll register a new shim intent for Bob,
+	// so he knows what keys to use when he receives the funding request
+	// from Alice.
+	pendingChanID := testHdSeed
+	err = bob.RegisterFundingIntent(pendingChanID, bobShimIntent)
+	if err != nil {
+		t.Fatalf("unable to register intent: %v", err)
+	}
+
+	// Now we can carry out the single funding flow as normal, we'll
+	// specify our external funder and funding transaction, as well as the
+	// pending channel ID generated above to allow Alice and Bob to track
+	// the funding flow externally.
+	testSingleFunderReservationWorkflow(
+		miner, alice, bob, t, lnwallet.CommitmentTypeTweakless,
+		aliceExternalFunder, func() *wire.MsgTx {
+			return fundingTx
+		}, pendingChanID, thawHeight,
+	)
+}
+
 // TestInterfaces tests all registered interfaces with a unified set of tests
 // which exercise each of the required methods found within the WalletController
 // interface.
@@ -2736,8 +2907,10 @@ func TestLightningWallet(t *testing.T) {
 
 	for _, walletDriver := range lnwallet.RegisteredWallets() {
 		for _, backEnd := range walletDriver.BackEnds() {
-			runTests(t, walletDriver, backEnd, miningNode,
-				rpcConfig, chainNotifier)
+			if !runTests(t, walletDriver, backEnd, miningNode,
+				rpcConfig, chainNotifier) {
+				return
+			}
 		}
 	}
 }
@@ -2749,7 +2922,7 @@ func TestLightningWallet(t *testing.T) {
 func runTests(t *testing.T, walletDriver *lnwallet.WalletDriver,
 	backEnd string, miningNode *rpctest.Harness,
 	rpcConfig rpcclient.ConnConfig,
-	chainNotifier *btcdnotify.BtcdNotifier) {
+	chainNotifier chainntnfs.ChainNotifier) bool {
 
 	var (
 		bio lnwallet.BlockChainIO
@@ -2890,18 +3063,22 @@ func runTests(t *testing.T, walletDriver *lnwallet.WalletDriver,
 			defer bitcoind.Process.Kill()
 
 			// Wait for the bitcoind instance to start up.
-			time.Sleep(time.Second)
 
 			host := fmt.Sprintf("127.0.0.1:%d", rpcPort)
-			chainConn, err := chain.NewBitcoindConn(
-				netParams, host, "weks", "weks", zmqBlockHost,
-				zmqTxHost, 100*time.Millisecond,
-			)
+			var chainConn *chain.BitcoindConn
+			err = wait.NoError(func() error {
+				chainConn, err = chain.NewBitcoindConn(
+					netParams, host, "weks", "weks",
+					zmqBlockHost, zmqTxHost,
+					100*time.Millisecond,
+				)
+				if err != nil {
+					return err
+				}
+
+				return chainConn.Start()
+			}, 10*time.Second)
 			if err != nil {
-				t.Fatalf("unable to establish connection to "+
-					"bitcoind: %v", err)
-			}
-			if err := chainConn.Start(); err != nil {
 				t.Fatalf("unable to establish connection to "+
 					"bitcoind: %v", err)
 			}
@@ -2978,8 +3155,7 @@ func runTests(t *testing.T, walletDriver *lnwallet.WalletDriver,
 
 	bob, err := createTestWallet(
 		tempTestDirBob, miningNode, netParams,
-		chainNotifier, bobWalletController, bobKeyRing,
-		bobSigner, bio,
+		chainNotifier, bobWalletController, bobKeyRing, bobSigner, bio,
 	)
 	if err != nil {
 		t.Fatalf("unable to create test ln wallet: %v", err)
@@ -2994,21 +3170,31 @@ func runTests(t *testing.T, walletDriver *lnwallet.WalletDriver,
 	// Execute every test, clearing possibly mutated
 	// wallet state after each step.
 	for _, walletTest := range walletTests {
+
+		walletTest := walletTest
+
 		testName := fmt.Sprintf("%v/%v:%v", walletType, backEnd,
 			walletTest.name)
 		success := t.Run(testName, func(t *testing.T) {
+			if backEnd == "neutrino" &&
+				strings.Contains(walletTest.name, "dual funder") {
+				t.Skip("skipping dual funder tests for neutrino")
+			}
+
 			walletTest.test(miningNode, alice, bob, t)
 		})
 		if !success {
-			break
+			return false
 		}
 
 		// TODO(roasbeef): possible reset mining
 		// node's chainstate to initial level, cleanly
 		// wipe buckets
 		if err := clearWalletStates(alice, bob); err !=
-			nil && err != bbolt.ErrBucketNotFound {
+			nil && err != kvdb.ErrBucketNotFound {
 			t.Fatalf("unable to wipe wallet state: %v", err)
 		}
 	}
+
+	return true
 }

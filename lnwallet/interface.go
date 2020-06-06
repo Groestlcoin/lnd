@@ -10,6 +10,8 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcwallet/wallet/txauthor"
+	"github.com/lightningnetwork/lnd/input"
+	"github.com/lightningnetwork/lnd/lnwallet/chainfee"
 )
 
 // AddressType is an enum-like type which denotes the possible address types
@@ -172,7 +174,7 @@ type WalletController interface {
 	// This method also takes the target fee expressed in sat/kw that should
 	// be used when crafting the transaction.
 	SendOutputs(outputs []*wire.TxOut,
-		feeRate SatPerKWeight) (*wire.MsgTx, error)
+		feeRate chainfee.SatPerKWeight) (*wire.MsgTx, error)
 
 	// CreateSimpleTx creates a Bitcoin transaction paying to the specified
 	// outputs. The transaction is not broadcasted to the network. In the
@@ -184,7 +186,7 @@ type WalletController interface {
 	// NOTE: The dryRun argument can be set true to create a tx that
 	// doesn't alter the database. A tx created with this set to true
 	// SHOULD NOT be broadcasted.
-	CreateSimpleTx(outputs []*wire.TxOut, feeRate SatPerKWeight,
+	CreateSimpleTx(outputs []*wire.TxOut, feeRate chainfee.SatPerKWeight,
 		dryRun bool) (*txauthor.AuthoredTx, error)
 
 	// ListUnspentWitness returns all unspent outputs which are version 0
@@ -291,7 +293,7 @@ type MessageSigner interface {
 	// that corresponds to the passed public key. If the target private key
 	// is unable to be found, then an error will be returned. The actual
 	// digest signed is the double SHA-256 of the passed message.
-	SignMessage(pubKey *btcec.PublicKey, msg []byte) (*btcec.Signature, error)
+	SignMessage(pubKey *btcec.PublicKey, msg []byte) (input.Signature, error)
 }
 
 // WalletDriver represents a "driver" for a particular concrete

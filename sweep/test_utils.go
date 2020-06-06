@@ -6,25 +6,36 @@ import (
 	"testing"
 	"time"
 
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/lightningnetwork/lnd/chainntnfs"
 	"github.com/lightningnetwork/lnd/input"
-	"github.com/lightningnetwork/lnd/lnwallet"
 )
 
 var (
 	defaultTestTimeout = 5 * time.Second
-	mockChainIOHeight  = int32(100)
+	mockChainHash, _   = chainhash.NewHashFromStr("00aabbccddeeff")
+	mockChainHeight    = int32(100)
 )
+
+type dummySignature struct{}
+
+func (s *dummySignature) Serialize() []byte {
+	return []byte{}
+}
+
+func (s *dummySignature) Verify(_ []byte, _ *btcec.PublicKey) bool {
+	return true
+}
 
 type mockSigner struct {
 }
 
 func (m *mockSigner) SignOutputRaw(tx *wire.MsgTx,
-	signDesc *input.SignDescriptor) ([]byte, error) {
+	signDesc *input.SignDescriptor) (input.Signature, error) {
 
-	return []byte{}, nil
+	return &dummySignature{}, nil
 }
 
 func (m *mockSigner) ComputeInputScript(tx *wire.MsgTx,
@@ -155,12 +166,22 @@ func (m *MockNotifier) RegisterBlockEpochNtfn(
 	log.Tracef("Mock block ntfn registered")
 
 	m.mutex.Lock()
-	epochChan := make(chan *chainntnfs.BlockEpoch, 0)
-	bestHeight := int32(0)
-	if bestBlock != nil {
-		bestHeight = bestBlock.Height
+	epochChan := make(chan *chainntnfs.BlockEpoch, 1)
+
+	// The real notifier returns a notification with the current block hash
+	// and height immediately if no best block hash or height is specified
+	// in the request. We want to emulate this behaviour as well for the
+	// mock.
+	switch {
+	case bestBlock == nil:
+		epochChan <- &chainntnfs.BlockEpoch{
+			Hash:   mockChainHash,
+			Height: mockChainHeight,
+		}
+		m.epochChan[epochChan] = mockChainHeight
+	default:
+		m.epochChan[epochChan] = bestBlock.Height
 	}
-	m.epochChan[epochChan] = bestHeight
 	m.mutex.Unlock()
 
 	return &chainntnfs.BlockEpochEvent{
@@ -206,7 +227,7 @@ func (m *MockNotifier) RegisterSpendNtfn(outpoint *wire.OutPoint,
 	m.mutex.Unlock()
 
 	// If output has been spent already, signal now. Do this outside the
-	// lock to prevent a dead lock.
+	// lock to prevent a deadlock.
 	if spent {
 		m.sendSpend(channel, outpoint, spendingTx)
 	}
@@ -234,26 +255,4 @@ func (m *MockNotifier) RegisterSpendNtfn(outpoint *wire.OutPoint,
 				outpoint)
 		},
 	}, nil
-}
-
-type mockChainIO struct{}
-
-var _ lnwallet.BlockChainIO = (*mockChainIO)(nil)
-
-func (m *mockChainIO) GetBestBlock() (*chainhash.Hash, int32, error) {
-	return nil, mockChainIOHeight, nil
-}
-
-func (m *mockChainIO) GetUtxo(op *wire.OutPoint, pkScript []byte,
-	heightHint uint32, _ <-chan struct{}) (*wire.TxOut, error) {
-
-	return nil, nil
-}
-
-func (m *mockChainIO) GetBlockHash(blockHeight int64) (*chainhash.Hash, error) {
-	return nil, nil
-}
-
-func (m *mockChainIO) GetBlock(blockHash *chainhash.Hash) (*wire.MsgBlock, error) {
-	return nil, nil
 }

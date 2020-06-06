@@ -11,28 +11,46 @@ import (
 // Instantiate variables to allow taking a reference from the failure reason.
 var (
 	reasonError            = channeldb.FailureReasonError
-	reasonIncorrectDetails = channeldb.FailureReasonIncorrectPaymentDetails
+	reasonIncorrectDetails = channeldb.FailureReasonPaymentDetails
 )
 
 // pairResult contains the result of the interpretation of a payment attempt for
 // a specific node pair.
 type pairResult struct {
-	// minPenalizeAmt is the minimum amount for which a penalty should be
-	// applied based on this result. Only applies to fail results.
-	minPenalizeAmt lnwire.MilliSatoshi
+	// amt is the amount that was forwarded for this pair. Can be set to
+	// zero for failures that are amount independent.
+	amt lnwire.MilliSatoshi
 
 	// success indicates whether the payment attempt was successful through
 	// this pair.
 	success bool
 }
 
+// failPairResult creates a new result struct for a failure.
+func failPairResult(minPenalizeAmt lnwire.MilliSatoshi) pairResult {
+	return pairResult{
+		amt: minPenalizeAmt,
+	}
+}
+
+// newSuccessPairResult creates a new result struct for a success.
+func successPairResult(successAmt lnwire.MilliSatoshi) pairResult {
+	return pairResult{
+		success: true,
+		amt:     successAmt,
+	}
+}
+
 // String returns the human-readable representation of a pair result.
 func (p pairResult) String() string {
+	var resultType string
 	if p.success {
-		return "success"
+		resultType = "success"
+	} else {
+		resultType = "failed"
 	}
 
-	return fmt.Sprintf("failed (minPenalizeAmt=%v)", p.minPenalizeAmt)
+	return fmt.Sprintf("%v (amt=%v)", resultType, p.amt)
 }
 
 // interpretedResult contains the result of the interpretation of a payment
@@ -173,10 +191,8 @@ func (i *interpretedResult) processPaymentOutcomeFinal(
 		i.failPair(route, n-1)
 
 		// The other hops relayed corectly, so assign those pairs a
-		// success result.
-		if n > 2 {
-			i.successPairRange(route, 0, n-2)
-		}
+		// success result. At this point, n >= 2.
+		i.successPairRange(route, 0, n-2)
 
 	// We are using wrong payment hash or amount, fail the payment.
 	case *lnwire.FailIncorrectPaymentAmount,
@@ -198,6 +214,11 @@ func (i *interpretedResult) processPaymentOutcomeFinal(
 		// deliberately. What to penalize?
 		i.finalFailureReason = &reasonIncorrectDetails
 
+	case *lnwire.FailMPPTimeout:
+		// Assign all pairs a success result, as the payment reached the
+		// destination correctly. Continue the payment process.
+		i.successPairRange(route, 0, n-1)
+
 	default:
 		// All other errors are considered terminal if coming from the
 		// final hop. They indicate that something is wrong at the
@@ -205,7 +226,7 @@ func (i *interpretedResult) processPaymentOutcomeFinal(
 		i.failNode(route, n)
 
 		// Other channels in the route forwarded correctly.
-		if n > 2 {
+		if n >= 2 {
 			i.successPairRange(route, 0, n-2)
 		}
 
@@ -251,7 +272,17 @@ func (i *interpretedResult) processPaymentOutcomeIntermediate(
 
 		// All nodes up to the failing pair must have forwarded
 		// successfully.
-		if errorSourceIdx > 2 {
+		if errorSourceIdx > 1 {
+			i.successPairRange(route, 0, errorSourceIdx-2)
+		}
+	}
+
+	reportNode := func() {
+		// Fail only the node that reported the failure.
+		i.failNode(route, errorSourceIdx)
+
+		// Other preceding channels in the route forwarded correctly.
+		if errorSourceIdx > 1 {
 			i.successPairRange(route, 0, errorSourceIdx-2)
 		}
 	}
@@ -287,6 +318,14 @@ func (i *interpretedResult) processPaymentOutcomeIntermediate(
 		*lnwire.FailInvalidOnionKey:
 
 		reportOutgoing()
+
+	// If InvalidOnionPayload is received, we penalize only the reporting
+	// node. We know the preceding hop didn't corrupt the onion, since the
+	// reporting node is able to send the failure. We assume that we
+	// constructed a valid onion payload and that the failure is most likely
+	// an unknown required type or a bug in their implementation.
+	case *lnwire.InvalidOnionPayload:
+		reportNode()
 
 	// If the next hop in the route wasn't known or offline, we'll only
 	// penalize the channel set which we attempted to route over. This is
@@ -364,10 +403,33 @@ func (i *interpretedResult) processPaymentOutcomeUnknown(route *route.Route) {
 	i.failPairRange(route, 0, n-1)
 }
 
-// failNode marks the node indicated by idx in the route as failed. This
-// function intentionally panics when the self node is failed.
+// failNode marks the node indicated by idx in the route as failed. It also
+// marks the incoming and outgoing channels of the node as failed. This function
+// intentionally panics when the self node is failed.
 func (i *interpretedResult) failNode(rt *route.Route, idx int) {
+	// Mark the node as failing.
 	i.nodeFailure = &rt.Hops[idx-1].PubKeyBytes
+
+	// Mark the incoming connection as failed for the node. We intent to
+	// penalize as much as we can for a node level failure, including future
+	// outgoing traffic for this connection. The pair as it is returned by
+	// getPair is penalized in the original and the reversed direction. Note
+	// that this will also affect the score of the failing node's peers.
+	// This is necessary to prevent future routes from keep going into the
+	// same node again.
+	incomingChannelIdx := idx - 1
+	inPair, _ := getPair(rt, incomingChannelIdx)
+	i.pairResults[inPair] = failPairResult(0)
+	i.pairResults[inPair.Reverse()] = failPairResult(0)
+
+	// If not the ultimate node, mark the outgoing connection as failed for
+	// the node.
+	if idx < len(rt.Hops) {
+		outgoingChannelIdx := idx
+		outPair, _ := getPair(rt, outgoingChannelIdx)
+		i.pairResults[outPair] = failPairResult(0)
+		i.pairResults[outPair.Reverse()] = failPairResult(0)
+	}
 }
 
 // failPairRange marks the node pairs from node fromIdx to node toIdx as failed
@@ -387,8 +449,8 @@ func (i *interpretedResult) failPair(
 	pair, _ := getPair(rt, idx)
 
 	// Report pair in both directions without a minimum penalization amount.
-	i.pairResults[pair] = pairResult{}
-	i.pairResults[pair.Reverse()] = pairResult{}
+	i.pairResults[pair] = failPairResult(0)
+	i.pairResults[pair.Reverse()] = failPairResult(0)
 }
 
 // failPairBalance marks a pair as failed with a minimum penalization amount.
@@ -397,9 +459,7 @@ func (i *interpretedResult) failPairBalance(
 
 	pair, amt := getPair(rt, channelIdx)
 
-	i.pairResults[pair] = pairResult{
-		minPenalizeAmt: amt,
-	}
+	i.pairResults[pair] = failPairResult(amt)
 }
 
 // successPairRange marks the node pairs from node fromIdx to node toIdx as
@@ -408,11 +468,9 @@ func (i *interpretedResult) successPairRange(
 	rt *route.Route, fromIdx, toIdx int) {
 
 	for idx := fromIdx; idx <= toIdx; idx++ {
-		pair, _ := getPair(rt, idx)
+		pair, amt := getPair(rt, idx)
 
-		i.pairResults[pair] = pairResult{
-			success: true,
-		}
+		i.pairResults[pair] = successPairResult(amt)
 	}
 }
 

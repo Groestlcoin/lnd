@@ -158,6 +158,9 @@ To check that `lnd` was installed properly run the following command:
 make check
 ```
 
+This command requires `groestlcoind` (almost any version should do) to be available
+in the system's `$PATH` variable. Otherwise some of the tests will fail.
+
 # Available Backend Operating Modes
 
 In order to run, `lnd` requires, that the user specify a chain backend. At the
@@ -204,6 +207,7 @@ groestlcoind:
       --groestlcoind.rpcpass=                                     Password for RPC connections
       --groestlcoind.zmqpubrawblock=                              The address listening for ZMQ connections to deliver raw block notifications
       --groestlcoind.zmqpubrawtx=                                 The address listening for ZMQ connections to deliver raw transaction notifications
+      --groestlcoind.estimatemode=                                The fee estimate mode. Must be either "ECONOMICAL" or "CONSERVATIVE". (default: CONSERVATIVE)
 ```
 
 ## Using grsd
@@ -350,6 +354,9 @@ lnd --groestlcoin.testnet --debuglevel=debug --groestlcoin.node=groestlcoind --g
   the default `groestlcoind` settings, having more than one instance of `lnd`, or
   `lnd` plus any application that consumes the RPC could cause `lnd` to miss
   crucial updates from the backend.
+- The default fee estimate mode in `groestlcoind` is CONSERVATIVE. You can set
+  `groestlcoind.estimatemode=ECONOMICAL` to change it into ECONOMICAL. Futhermore,
+  if you start `groestlcoind` in `regtest`, this configuration won't take any effect.
 
 
 # Creating a wallet

@@ -23,6 +23,94 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type FailureDetail int32
+
+const (
+	FailureDetail_UNKNOWN                 FailureDetail = 0
+	FailureDetail_NO_DETAIL               FailureDetail = 1
+	FailureDetail_ONION_DECODE            FailureDetail = 2
+	FailureDetail_LINK_NOT_ELIGIBLE       FailureDetail = 3
+	FailureDetail_ON_CHAIN_TIMEOUT        FailureDetail = 4
+	FailureDetail_HTLC_EXCEEDS_MAX        FailureDetail = 5
+	FailureDetail_INSUFFICIENT_BALANCE    FailureDetail = 6
+	FailureDetail_INCOMPLETE_FORWARD      FailureDetail = 7
+	FailureDetail_HTLC_ADD_FAILED         FailureDetail = 8
+	FailureDetail_FORWARDS_DISABLED       FailureDetail = 9
+	FailureDetail_INVOICE_CANCELED        FailureDetail = 10
+	FailureDetail_INVOICE_UNDERPAID       FailureDetail = 11
+	FailureDetail_INVOICE_EXPIRY_TOO_SOON FailureDetail = 12
+	FailureDetail_INVOICE_NOT_OPEN        FailureDetail = 13
+	FailureDetail_MPP_INVOICE_TIMEOUT     FailureDetail = 14
+	FailureDetail_ADDRESS_MISMATCH        FailureDetail = 15
+	FailureDetail_SET_TOTAL_MISMATCH      FailureDetail = 16
+	FailureDetail_SET_TOTAL_TOO_LOW       FailureDetail = 17
+	FailureDetail_SET_OVERPAID            FailureDetail = 18
+	FailureDetail_UNKNOWN_INVOICE         FailureDetail = 19
+	FailureDetail_INVALID_KEYSEND         FailureDetail = 20
+	FailureDetail_MPP_IN_PROGRESS         FailureDetail = 21
+	FailureDetail_CIRCULAR_ROUTE          FailureDetail = 22
+)
+
+var FailureDetail_name = map[int32]string{
+	0:  "UNKNOWN",
+	1:  "NO_DETAIL",
+	2:  "ONION_DECODE",
+	3:  "LINK_NOT_ELIGIBLE",
+	4:  "ON_CHAIN_TIMEOUT",
+	5:  "HTLC_EXCEEDS_MAX",
+	6:  "INSUFFICIENT_BALANCE",
+	7:  "INCOMPLETE_FORWARD",
+	8:  "HTLC_ADD_FAILED",
+	9:  "FORWARDS_DISABLED",
+	10: "INVOICE_CANCELED",
+	11: "INVOICE_UNDERPAID",
+	12: "INVOICE_EXPIRY_TOO_SOON",
+	13: "INVOICE_NOT_OPEN",
+	14: "MPP_INVOICE_TIMEOUT",
+	15: "ADDRESS_MISMATCH",
+	16: "SET_TOTAL_MISMATCH",
+	17: "SET_TOTAL_TOO_LOW",
+	18: "SET_OVERPAID",
+	19: "UNKNOWN_INVOICE",
+	20: "INVALID_KEYSEND",
+	21: "MPP_IN_PROGRESS",
+	22: "CIRCULAR_ROUTE",
+}
+
+var FailureDetail_value = map[string]int32{
+	"UNKNOWN":                 0,
+	"NO_DETAIL":               1,
+	"ONION_DECODE":            2,
+	"LINK_NOT_ELIGIBLE":       3,
+	"ON_CHAIN_TIMEOUT":        4,
+	"HTLC_EXCEEDS_MAX":        5,
+	"INSUFFICIENT_BALANCE":    6,
+	"INCOMPLETE_FORWARD":      7,
+	"HTLC_ADD_FAILED":         8,
+	"FORWARDS_DISABLED":       9,
+	"INVOICE_CANCELED":        10,
+	"INVOICE_UNDERPAID":       11,
+	"INVOICE_EXPIRY_TOO_SOON": 12,
+	"INVOICE_NOT_OPEN":        13,
+	"MPP_INVOICE_TIMEOUT":     14,
+	"ADDRESS_MISMATCH":        15,
+	"SET_TOTAL_MISMATCH":      16,
+	"SET_TOTAL_TOO_LOW":       17,
+	"SET_OVERPAID":            18,
+	"UNKNOWN_INVOICE":         19,
+	"INVALID_KEYSEND":         20,
+	"MPP_IN_PROGRESS":         21,
+	"CIRCULAR_ROUTE":          22,
+}
+
+func (x FailureDetail) String() string {
+	return proto.EnumName(FailureDetail_name, int32(x))
+}
+
+func (FailureDetail) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{0}
+}
+
 type PaymentState int32
 
 const (
@@ -46,6 +134,9 @@ const (
 	//Payment details incorrect (unknown hash, invalid amt or
 	//invalid final cltv delta)
 	PaymentState_FAILED_INCORRECT_PAYMENT_DETAILS PaymentState = 5
+	//*
+	//Insufficient local balance.
+	PaymentState_FAILED_INSUFFICIENT_BALANCE PaymentState = 6
 )
 
 var PaymentState_name = map[int32]string{
@@ -55,6 +146,7 @@ var PaymentState_name = map[int32]string{
 	3: "FAILED_NO_ROUTE",
 	4: "FAILED_ERROR",
 	5: "FAILED_INCORRECT_PAYMENT_DETAILS",
+	6: "FAILED_INSUFFICIENT_BALANCE",
 }
 
 var PaymentState_value = map[string]int32{
@@ -64,6 +156,7 @@ var PaymentState_value = map[string]int32{
 	"FAILED_NO_ROUTE":                  3,
 	"FAILED_ERROR":                     4,
 	"FAILED_INCORRECT_PAYMENT_DETAILS": 5,
+	"FAILED_INSUFFICIENT_BALANCE":      6,
 }
 
 func (x PaymentState) String() string {
@@ -71,117 +164,53 @@ func (x PaymentState) String() string {
 }
 
 func (PaymentState) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{0}
+	return fileDescriptor_7a0613f69d37b0a5, []int{1}
 }
 
-type Failure_FailureCode int32
+type HtlcEvent_EventType int32
 
 const (
-	//*
-	//The numbers assigned in this enumeration match the failure codes as
-	//defined in BOLT #4. Because protobuf 3 requires enums to start with 0,
-	//a RESERVED value is added.
-	Failure_RESERVED                             Failure_FailureCode = 0
-	Failure_INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS Failure_FailureCode = 1
-	Failure_INCORRECT_PAYMENT_AMOUNT             Failure_FailureCode = 2
-	Failure_FINAL_INCORRECT_CLTV_EXPIRY          Failure_FailureCode = 3
-	Failure_FINAL_INCORRECT_HTLC_AMOUNT          Failure_FailureCode = 4
-	Failure_FINAL_EXPIRY_TOO_SOON                Failure_FailureCode = 5
-	Failure_INVALID_REALM                        Failure_FailureCode = 6
-	Failure_EXPIRY_TOO_SOON                      Failure_FailureCode = 7
-	Failure_INVALID_ONION_VERSION                Failure_FailureCode = 8
-	Failure_INVALID_ONION_HMAC                   Failure_FailureCode = 9
-	Failure_INVALID_ONION_KEY                    Failure_FailureCode = 10
-	Failure_AMOUNT_BELOW_MINIMUM                 Failure_FailureCode = 11
-	Failure_FEE_INSUFFICIENT                     Failure_FailureCode = 12
-	Failure_INCORRECT_CLTV_EXPIRY                Failure_FailureCode = 13
-	Failure_CHANNEL_DISABLED                     Failure_FailureCode = 14
-	Failure_TEMPORARY_CHANNEL_FAILURE            Failure_FailureCode = 15
-	Failure_REQUIRED_NODE_FEATURE_MISSING        Failure_FailureCode = 16
-	Failure_REQUIRED_CHANNEL_FEATURE_MISSING     Failure_FailureCode = 17
-	Failure_UNKNOWN_NEXT_PEER                    Failure_FailureCode = 18
-	Failure_TEMPORARY_NODE_FAILURE               Failure_FailureCode = 19
-	Failure_PERMANENT_NODE_FAILURE               Failure_FailureCode = 20
-	Failure_PERMANENT_CHANNEL_FAILURE            Failure_FailureCode = 21
-	Failure_EXPIRY_TOO_FAR                       Failure_FailureCode = 22
-	//*
-	//The error source is known, but the failure itself couldn't be decoded.
-	Failure_UNKNOWN_FAILURE Failure_FailureCode = 998
-	//*
-	//An unreadable failure result is returned if the received failure message
-	//cannot be decrypted. In that case the error source is unknown.
-	Failure_UNREADABLE_FAILURE Failure_FailureCode = 999
+	HtlcEvent_UNKNOWN HtlcEvent_EventType = 0
+	HtlcEvent_SEND    HtlcEvent_EventType = 1
+	HtlcEvent_RECEIVE HtlcEvent_EventType = 2
+	HtlcEvent_FORWARD HtlcEvent_EventType = 3
 )
 
-var Failure_FailureCode_name = map[int32]string{
-	0:   "RESERVED",
-	1:   "INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS",
-	2:   "INCORRECT_PAYMENT_AMOUNT",
-	3:   "FINAL_INCORRECT_CLTV_EXPIRY",
-	4:   "FINAL_INCORRECT_HTLC_AMOUNT",
-	5:   "FINAL_EXPIRY_TOO_SOON",
-	6:   "INVALID_REALM",
-	7:   "EXPIRY_TOO_SOON",
-	8:   "INVALID_ONION_VERSION",
-	9:   "INVALID_ONION_HMAC",
-	10:  "INVALID_ONION_KEY",
-	11:  "AMOUNT_BELOW_MINIMUM",
-	12:  "FEE_INSUFFICIENT",
-	13:  "INCORRECT_CLTV_EXPIRY",
-	14:  "CHANNEL_DISABLED",
-	15:  "TEMPORARY_CHANNEL_FAILURE",
-	16:  "REQUIRED_NODE_FEATURE_MISSING",
-	17:  "REQUIRED_CHANNEL_FEATURE_MISSING",
-	18:  "UNKNOWN_NEXT_PEER",
-	19:  "TEMPORARY_NODE_FAILURE",
-	20:  "PERMANENT_NODE_FAILURE",
-	21:  "PERMANENT_CHANNEL_FAILURE",
-	22:  "EXPIRY_TOO_FAR",
-	998: "UNKNOWN_FAILURE",
-	999: "UNREADABLE_FAILURE",
+var HtlcEvent_EventType_name = map[int32]string{
+	0: "UNKNOWN",
+	1: "SEND",
+	2: "RECEIVE",
+	3: "FORWARD",
 }
 
-var Failure_FailureCode_value = map[string]int32{
-	"RESERVED":                             0,
-	"INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS": 1,
-	"INCORRECT_PAYMENT_AMOUNT":             2,
-	"FINAL_INCORRECT_CLTV_EXPIRY":          3,
-	"FINAL_INCORRECT_HTLC_AMOUNT":          4,
-	"FINAL_EXPIRY_TOO_SOON":                5,
-	"INVALID_REALM":                        6,
-	"EXPIRY_TOO_SOON":                      7,
-	"INVALID_ONION_VERSION":                8,
-	"INVALID_ONION_HMAC":                   9,
-	"INVALID_ONION_KEY":                    10,
-	"AMOUNT_BELOW_MINIMUM":                 11,
-	"FEE_INSUFFICIENT":                     12,
-	"INCORRECT_CLTV_EXPIRY":                13,
-	"CHANNEL_DISABLED":                     14,
-	"TEMPORARY_CHANNEL_FAILURE":            15,
-	"REQUIRED_NODE_FEATURE_MISSING":        16,
-	"REQUIRED_CHANNEL_FEATURE_MISSING":     17,
-	"UNKNOWN_NEXT_PEER":                    18,
-	"TEMPORARY_NODE_FAILURE":               19,
-	"PERMANENT_NODE_FAILURE":               20,
-	"PERMANENT_CHANNEL_FAILURE":            21,
-	"EXPIRY_TOO_FAR":                       22,
-	"UNKNOWN_FAILURE":                      998,
-	"UNREADABLE_FAILURE":                   999,
+var HtlcEvent_EventType_value = map[string]int32{
+	"UNKNOWN": 0,
+	"SEND":    1,
+	"RECEIVE": 2,
+	"FORWARD": 3,
 }
 
-func (x Failure_FailureCode) String() string {
-	return proto.EnumName(Failure_FailureCode_name, int32(x))
+func (x HtlcEvent_EventType) String() string {
+	return proto.EnumName(HtlcEvent_EventType_name, int32(x))
 }
 
-func (Failure_FailureCode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{7, 0}
+func (HtlcEvent_EventType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{17, 0}
 }
 
 type SendPaymentRequest struct {
 	/// The identity pubkey of the payment recipient
 	Dest []byte `protobuf:"bytes,1,opt,name=dest,proto3" json:"dest,omitempty"`
-	/// Number of satoshis to send.
+	//*
+	//Number of satoshis to send.
+	//
+	//The fields amt and amt_msat are mutually exclusive.
 	Amt int64 `protobuf:"varint,2,opt,name=amt,proto3" json:"amt,omitempty"`
+	//*
+	//Number of millisatoshis to send.
+	//
+	//The fields amt and amt_msat are mutually exclusive.
+	AmtMsat int64 `protobuf:"varint,12,opt,name=amt_msat,json=amtMsat,proto3" json:"amt_msat,omitempty"`
 	/// The hash to use within the payment's HTLC
 	PaymentHash []byte `protobuf:"bytes,3,opt,name=payment_hash,json=paymentHash,proto3" json:"payment_hash,omitempty"`
 	//*
@@ -206,11 +235,25 @@ type SendPaymentRequest struct {
 	//If this field is left to the default value of 0, only zero-fee routes will
 	//be considered. This usually means single hop routes connecting directly to
 	//the destination. To send the payment without a fee limit, use max int here.
+	//
+	//The fields fee_limit_sat and fee_limit_msat are mutually exclusive.
 	FeeLimitSat int64 `protobuf:"varint,7,opt,name=fee_limit_sat,json=feeLimitSat,proto3" json:"fee_limit_sat,omitempty"`
+	//*
+	//The maximum number of millisatoshis that will be paid as a fee of the
+	//payment. If this field is left to the default value of 0, only zero-fee
+	//routes will be considered. This usually means single hop routes connecting
+	//directly to the destination. To send the payment without a fee limit, use
+	//max int here.
+	//
+	//The fields fee_limit_sat and fee_limit_msat are mutually exclusive.
+	FeeLimitMsat int64 `protobuf:"varint,13,opt,name=fee_limit_msat,json=feeLimitMsat,proto3" json:"fee_limit_msat,omitempty"`
 	//*
 	//The channel id of the channel that must be taken to the first hop. If zero,
 	//any channel may be used.
 	OutgoingChanId uint64 `protobuf:"varint,8,opt,name=outgoing_chan_id,json=outgoingChanId,proto3" json:"outgoing_chan_id,omitempty"`
+	//*
+	//The pubkey of the last hop of the route. If empty, any hop may be used.
+	LastHopPubkey []byte `protobuf:"bytes,14,opt,name=last_hop_pubkey,json=lastHopPubkey,proto3" json:"last_hop_pubkey,omitempty"`
 	//*
 	//An optional maximum total time lock for the route. This should not exceed
 	//lnd's `--max-cltv-expiry` setting. If zero, then the value of
@@ -218,15 +261,34 @@ type SendPaymentRequest struct {
 	CltvLimit int32 `protobuf:"varint,9,opt,name=cltv_limit,json=cltvLimit,proto3" json:"cltv_limit,omitempty"`
 	//*
 	//Optional route hints to reach the destination through private channels.
-	RouteHints []*lnrpc.RouteHint `protobuf:"bytes,10,rep,name=route_hints,proto3" json:"route_hints,omitempty"`
+	RouteHints []*lnrpc.RouteHint `protobuf:"bytes,10,rep,name=route_hints,json=routeHints,proto3" json:"route_hints,omitempty"`
 	//*
 	//An optional field that can be used to pass an arbitrary set of TLV records
 	//to a peer which understands the new records. This can be used to pass
-	//application specific data during the payment attempt.
-	DestTlv              map[uint64][]byte `protobuf:"bytes,11,rep,name=dest_tlv,json=destTlv,proto3" json:"dest_tlv,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	//application specific data during the payment attempt. Record types are
+	//required to be in the custom range >= 65536. When using REST, the values
+	//must be encoded as base64.
+	DestCustomRecords map[uint64][]byte `protobuf:"bytes,11,rep,name=dest_custom_records,json=destCustomRecords,proto3" json:"dest_custom_records,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	/// If set, circular payments to self are permitted.
+	AllowSelfPayment bool `protobuf:"varint,15,opt,name=allow_self_payment,json=allowSelfPayment,proto3" json:"allow_self_payment,omitempty"`
+	//*
+	//Features assumed to be supported by the final node. All transitive feature
+	//dependencies must also be set properly. For a given feature bit pair, either
+	//optional or remote may be set, but not both. If this field is nil or empty,
+	//the router will try to load destination features from the graph as a
+	//fallback.
+	DestFeatures []lnrpc.FeatureBit `protobuf:"varint,16,rep,packed,name=dest_features,json=destFeatures,proto3,enum=lnrpc.FeatureBit" json:"dest_features,omitempty"`
+	//*
+	//The maximum number of partial payments that may be use to complete the full
+	//amount.
+	MaxParts uint32 `protobuf:"varint,17,opt,name=max_parts,json=maxParts,proto3" json:"max_parts,omitempty"`
+	//*
+	//If set, only the final payment update is streamed back. Intermediate updates
+	//that show which htlcs are still in flight are suppressed.
+	NoInflightUpdates    bool     `protobuf:"varint,18,opt,name=no_inflight_updates,json=noInflightUpdates,proto3" json:"no_inflight_updates,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *SendPaymentRequest) Reset()         { *m = SendPaymentRequest{} }
@@ -268,6 +330,13 @@ func (m *SendPaymentRequest) GetAmt() int64 {
 	return 0
 }
 
+func (m *SendPaymentRequest) GetAmtMsat() int64 {
+	if m != nil {
+		return m.AmtMsat
+	}
+	return 0
+}
+
 func (m *SendPaymentRequest) GetPaymentHash() []byte {
 	if m != nil {
 		return m.PaymentHash
@@ -303,11 +372,25 @@ func (m *SendPaymentRequest) GetFeeLimitSat() int64 {
 	return 0
 }
 
+func (m *SendPaymentRequest) GetFeeLimitMsat() int64 {
+	if m != nil {
+		return m.FeeLimitMsat
+	}
+	return 0
+}
+
 func (m *SendPaymentRequest) GetOutgoingChanId() uint64 {
 	if m != nil {
 		return m.OutgoingChanId
 	}
 	return 0
+}
+
+func (m *SendPaymentRequest) GetLastHopPubkey() []byte {
+	if m != nil {
+		return m.LastHopPubkey
+	}
+	return nil
 }
 
 func (m *SendPaymentRequest) GetCltvLimit() int32 {
@@ -324,16 +407,48 @@ func (m *SendPaymentRequest) GetRouteHints() []*lnrpc.RouteHint {
 	return nil
 }
 
-func (m *SendPaymentRequest) GetDestTlv() map[uint64][]byte {
+func (m *SendPaymentRequest) GetDestCustomRecords() map[uint64][]byte {
 	if m != nil {
-		return m.DestTlv
+		return m.DestCustomRecords
 	}
 	return nil
 }
 
+func (m *SendPaymentRequest) GetAllowSelfPayment() bool {
+	if m != nil {
+		return m.AllowSelfPayment
+	}
+	return false
+}
+
+func (m *SendPaymentRequest) GetDestFeatures() []lnrpc.FeatureBit {
+	if m != nil {
+		return m.DestFeatures
+	}
+	return nil
+}
+
+func (m *SendPaymentRequest) GetMaxParts() uint32 {
+	if m != nil {
+		return m.MaxParts
+	}
+	return 0
+}
+
+func (m *SendPaymentRequest) GetNoInflightUpdates() bool {
+	if m != nil {
+		return m.NoInflightUpdates
+	}
+	return false
+}
+
 type TrackPaymentRequest struct {
 	/// The hash of the payment to look up.
-	PaymentHash          []byte   `protobuf:"bytes,1,opt,name=payment_hash,json=paymentHash,proto3" json:"payment_hash,omitempty"`
+	PaymentHash []byte `protobuf:"bytes,1,opt,name=payment_hash,json=paymentHash,proto3" json:"payment_hash,omitempty"`
+	//*
+	//If set, only the final payment update is streamed back. Intermediate updates
+	//that show which htlcs are still in flight are suppressed.
+	NoInflightUpdates    bool     `protobuf:"varint,2,opt,name=no_inflight_updates,json=noInflightUpdates,proto3" json:"no_inflight_updates,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -371,64 +486,11 @@ func (m *TrackPaymentRequest) GetPaymentHash() []byte {
 	return nil
 }
 
-type PaymentStatus struct {
-	/// Current state the payment is in.
-	State PaymentState `protobuf:"varint,1,opt,name=state,proto3,enum=routerrpc.PaymentState" json:"state,omitempty"`
-	//*
-	//The pre-image of the payment when state is SUCCEEDED.
-	Preimage []byte `protobuf:"bytes,2,opt,name=preimage,proto3" json:"preimage,omitempty"`
-	//*
-	//The taken route when state is SUCCEEDED.
-	Route                *lnrpc.Route `protobuf:"bytes,3,opt,name=route,proto3" json:"route,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
-}
-
-func (m *PaymentStatus) Reset()         { *m = PaymentStatus{} }
-func (m *PaymentStatus) String() string { return proto.CompactTextString(m) }
-func (*PaymentStatus) ProtoMessage()    {}
-func (*PaymentStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{2}
-}
-
-func (m *PaymentStatus) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PaymentStatus.Unmarshal(m, b)
-}
-func (m *PaymentStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PaymentStatus.Marshal(b, m, deterministic)
-}
-func (m *PaymentStatus) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PaymentStatus.Merge(m, src)
-}
-func (m *PaymentStatus) XXX_Size() int {
-	return xxx_messageInfo_PaymentStatus.Size(m)
-}
-func (m *PaymentStatus) XXX_DiscardUnknown() {
-	xxx_messageInfo_PaymentStatus.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PaymentStatus proto.InternalMessageInfo
-
-func (m *PaymentStatus) GetState() PaymentState {
+func (m *TrackPaymentRequest) GetNoInflightUpdates() bool {
 	if m != nil {
-		return m.State
+		return m.NoInflightUpdates
 	}
-	return PaymentState_IN_FLIGHT
-}
-
-func (m *PaymentStatus) GetPreimage() []byte {
-	if m != nil {
-		return m.Preimage
-	}
-	return nil
-}
-
-func (m *PaymentStatus) GetRoute() *lnrpc.Route {
-	if m != nil {
-		return m.Route
-	}
-	return nil
+	return false
 }
 
 type RouteFeeRequest struct {
@@ -447,7 +509,7 @@ func (m *RouteFeeRequest) Reset()         { *m = RouteFeeRequest{} }
 func (m *RouteFeeRequest) String() string { return proto.CompactTextString(m) }
 func (*RouteFeeRequest) ProtoMessage()    {}
 func (*RouteFeeRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{3}
+	return fileDescriptor_7a0613f69d37b0a5, []int{2}
 }
 
 func (m *RouteFeeRequest) XXX_Unmarshal(b []byte) error {
@@ -501,7 +563,7 @@ func (m *RouteFeeResponse) Reset()         { *m = RouteFeeResponse{} }
 func (m *RouteFeeResponse) String() string { return proto.CompactTextString(m) }
 func (*RouteFeeResponse) ProtoMessage()    {}
 func (*RouteFeeResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{4}
+	return fileDescriptor_7a0613f69d37b0a5, []int{3}
 }
 
 func (m *RouteFeeResponse) XXX_Unmarshal(b []byte) error {
@@ -550,7 +612,7 @@ func (m *SendToRouteRequest) Reset()         { *m = SendToRouteRequest{} }
 func (m *SendToRouteRequest) String() string { return proto.CompactTextString(m) }
 func (*SendToRouteRequest) ProtoMessage()    {}
 func (*SendToRouteRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{5}
+	return fileDescriptor_7a0613f69d37b0a5, []int{4}
 }
 
 func (m *SendToRouteRequest) XXX_Unmarshal(b []byte) error {
@@ -589,17 +651,17 @@ type SendToRouteResponse struct {
 	/// The preimage obtained by making the payment.
 	Preimage []byte `protobuf:"bytes,1,opt,name=preimage,proto3" json:"preimage,omitempty"`
 	/// The failure message in case the payment failed.
-	Failure              *Failure `protobuf:"bytes,2,opt,name=failure,proto3" json:"failure,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Failure              *lnrpc.Failure `protobuf:"bytes,2,opt,name=failure,proto3" json:"failure,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *SendToRouteResponse) Reset()         { *m = SendToRouteResponse{} }
 func (m *SendToRouteResponse) String() string { return proto.CompactTextString(m) }
 func (*SendToRouteResponse) ProtoMessage()    {}
 func (*SendToRouteResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{6}
+	return fileDescriptor_7a0613f69d37b0a5, []int{5}
 }
 
 func (m *SendToRouteResponse) XXX_Unmarshal(b []byte) error {
@@ -627,286 +689,9 @@ func (m *SendToRouteResponse) GetPreimage() []byte {
 	return nil
 }
 
-func (m *SendToRouteResponse) GetFailure() *Failure {
+func (m *SendToRouteResponse) GetFailure() *lnrpc.Failure {
 	if m != nil {
 		return m.Failure
-	}
-	return nil
-}
-
-type Failure struct {
-	/// Failure code as defined in the Lightning spec
-	Code Failure_FailureCode `protobuf:"varint,1,opt,name=code,proto3,enum=routerrpc.Failure_FailureCode" json:"code,omitempty"`
-	/// An optional channel update message.
-	ChannelUpdate *ChannelUpdate `protobuf:"bytes,3,opt,name=channel_update,json=channelUpdate,proto3" json:"channel_update,omitempty"`
-	/// A failure type-dependent htlc value.
-	HtlcMsat uint64 `protobuf:"varint,4,opt,name=htlc_msat,json=htlcMsat,proto3" json:"htlc_msat,omitempty"`
-	/// The sha256 sum of the onion payload.
-	OnionSha_256 []byte `protobuf:"bytes,5,opt,name=onion_sha_256,json=onionSha256,proto3" json:"onion_sha_256,omitempty"`
-	/// A failure type-dependent cltv expiry value.
-	CltvExpiry uint32 `protobuf:"varint,6,opt,name=cltv_expiry,json=cltvExpiry,proto3" json:"cltv_expiry,omitempty"`
-	/// A failure type-dependent flags value.
-	Flags uint32 `protobuf:"varint,7,opt,name=flags,proto3" json:"flags,omitempty"`
-	//*
-	//The position in the path of the intermediate or final node that generated
-	//the failure message. Position zero is the sender node.
-	FailureSourceIndex uint32 `protobuf:"varint,8,opt,name=failure_source_index,json=failureSourceIndex,proto3" json:"failure_source_index,omitempty"`
-	/// A failure type-dependent block height.
-	Height               uint32   `protobuf:"varint,9,opt,name=height,proto3" json:"height,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Failure) Reset()         { *m = Failure{} }
-func (m *Failure) String() string { return proto.CompactTextString(m) }
-func (*Failure) ProtoMessage()    {}
-func (*Failure) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{7}
-}
-
-func (m *Failure) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Failure.Unmarshal(m, b)
-}
-func (m *Failure) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Failure.Marshal(b, m, deterministic)
-}
-func (m *Failure) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Failure.Merge(m, src)
-}
-func (m *Failure) XXX_Size() int {
-	return xxx_messageInfo_Failure.Size(m)
-}
-func (m *Failure) XXX_DiscardUnknown() {
-	xxx_messageInfo_Failure.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Failure proto.InternalMessageInfo
-
-func (m *Failure) GetCode() Failure_FailureCode {
-	if m != nil {
-		return m.Code
-	}
-	return Failure_RESERVED
-}
-
-func (m *Failure) GetChannelUpdate() *ChannelUpdate {
-	if m != nil {
-		return m.ChannelUpdate
-	}
-	return nil
-}
-
-func (m *Failure) GetHtlcMsat() uint64 {
-	if m != nil {
-		return m.HtlcMsat
-	}
-	return 0
-}
-
-func (m *Failure) GetOnionSha_256() []byte {
-	if m != nil {
-		return m.OnionSha_256
-	}
-	return nil
-}
-
-func (m *Failure) GetCltvExpiry() uint32 {
-	if m != nil {
-		return m.CltvExpiry
-	}
-	return 0
-}
-
-func (m *Failure) GetFlags() uint32 {
-	if m != nil {
-		return m.Flags
-	}
-	return 0
-}
-
-func (m *Failure) GetFailureSourceIndex() uint32 {
-	if m != nil {
-		return m.FailureSourceIndex
-	}
-	return 0
-}
-
-func (m *Failure) GetHeight() uint32 {
-	if m != nil {
-		return m.Height
-	}
-	return 0
-}
-
-type ChannelUpdate struct {
-	//*
-	//The signature that validates the announced data and proves the ownership
-	//of node id.
-	Signature []byte `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
-	//*
-	//The target chain that this channel was opened within. This value
-	//should be the genesis hash of the target chain. Along with the short
-	//channel ID, this uniquely identifies the channel globally in a
-	//blockchain.
-	ChainHash []byte `protobuf:"bytes,2,opt,name=chain_hash,json=chainHash,proto3" json:"chain_hash,omitempty"`
-	//*
-	//The unique description of the funding transaction.
-	ChanId uint64 `protobuf:"varint,3,opt,name=chan_id,json=chanId,proto3" json:"chan_id,omitempty"`
-	//*
-	//A timestamp that allows ordering in the case of multiple announcements.
-	//We should ignore the message if timestamp is not greater than the
-	//last-received.
-	Timestamp uint32 `protobuf:"varint,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	//*
-	//The bitfield that describes whether optional fields are present in this
-	//update. Currently, the least-significant bit must be set to 1 if the
-	//optional field MaxHtlc is present.
-	MessageFlags uint32 `protobuf:"varint,10,opt,name=message_flags,json=messageFlags,proto3" json:"message_flags,omitempty"`
-	//*
-	//The bitfield that describes additional meta-data concerning how the
-	//update is to be interpreted. Currently, the least-significant bit must be
-	//set to 0 if the creating node corresponds to the first node in the
-	//previously sent channel announcement and 1 otherwise. If the second bit
-	//is set, then the channel is set to be disabled.
-	ChannelFlags uint32 `protobuf:"varint,5,opt,name=channel_flags,json=channelFlags,proto3" json:"channel_flags,omitempty"`
-	//*
-	//The minimum number of blocks this node requires to be added to the expiry
-	//of HTLCs. This is a security parameter determined by the node operator.
-	//This value represents the required gap between the time locks of the
-	//incoming and outgoing HTLC's set to this node.
-	TimeLockDelta uint32 `protobuf:"varint,6,opt,name=time_lock_delta,json=timeLockDelta,proto3" json:"time_lock_delta,omitempty"`
-	//*
-	//The minimum HTLC value which will be accepted.
-	HtlcMinimumMsat uint64 `protobuf:"varint,7,opt,name=htlc_minimum_msat,json=htlcMinimumMsat,proto3" json:"htlc_minimum_msat,omitempty"`
-	//*
-	//The base fee that must be used for incoming HTLC's to this particular
-	//channel. This value will be tacked onto the required for a payment
-	//independent of the size of the payment.
-	BaseFee uint32 `protobuf:"varint,8,opt,name=base_fee,json=baseFee,proto3" json:"base_fee,omitempty"`
-	//*
-	//The fee rate that will be charged per millionth of a satoshi.
-	FeeRate uint32 `protobuf:"varint,9,opt,name=fee_rate,json=feeRate,proto3" json:"fee_rate,omitempty"`
-	//*
-	//The maximum HTLC value which will be accepted.
-	HtlcMaximumMsat uint64 `protobuf:"varint,11,opt,name=htlc_maximum_msat,json=htlcMaximumMsat,proto3" json:"htlc_maximum_msat,omitempty"`
-	//*
-	//The set of data that was appended to this message, some of which we may
-	//not actually know how to iterate or parse. By holding onto this data, we
-	//ensure that we're able to properly validate the set of signatures that
-	//cover these new fields, and ensure we're able to make upgrades to the
-	//network in a forwards compatible manner.
-	ExtraOpaqueData      []byte   `protobuf:"bytes,12,opt,name=extra_opaque_data,json=extraOpaqueData,proto3" json:"extra_opaque_data,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ChannelUpdate) Reset()         { *m = ChannelUpdate{} }
-func (m *ChannelUpdate) String() string { return proto.CompactTextString(m) }
-func (*ChannelUpdate) ProtoMessage()    {}
-func (*ChannelUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{8}
-}
-
-func (m *ChannelUpdate) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ChannelUpdate.Unmarshal(m, b)
-}
-func (m *ChannelUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ChannelUpdate.Marshal(b, m, deterministic)
-}
-func (m *ChannelUpdate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChannelUpdate.Merge(m, src)
-}
-func (m *ChannelUpdate) XXX_Size() int {
-	return xxx_messageInfo_ChannelUpdate.Size(m)
-}
-func (m *ChannelUpdate) XXX_DiscardUnknown() {
-	xxx_messageInfo_ChannelUpdate.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ChannelUpdate proto.InternalMessageInfo
-
-func (m *ChannelUpdate) GetSignature() []byte {
-	if m != nil {
-		return m.Signature
-	}
-	return nil
-}
-
-func (m *ChannelUpdate) GetChainHash() []byte {
-	if m != nil {
-		return m.ChainHash
-	}
-	return nil
-}
-
-func (m *ChannelUpdate) GetChanId() uint64 {
-	if m != nil {
-		return m.ChanId
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetTimestamp() uint32 {
-	if m != nil {
-		return m.Timestamp
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetMessageFlags() uint32 {
-	if m != nil {
-		return m.MessageFlags
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetChannelFlags() uint32 {
-	if m != nil {
-		return m.ChannelFlags
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetTimeLockDelta() uint32 {
-	if m != nil {
-		return m.TimeLockDelta
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetHtlcMinimumMsat() uint64 {
-	if m != nil {
-		return m.HtlcMinimumMsat
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetBaseFee() uint32 {
-	if m != nil {
-		return m.BaseFee
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetFeeRate() uint32 {
-	if m != nil {
-		return m.FeeRate
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetHtlcMaximumMsat() uint64 {
-	if m != nil {
-		return m.HtlcMaximumMsat
-	}
-	return 0
-}
-
-func (m *ChannelUpdate) GetExtraOpaqueData() []byte {
-	if m != nil {
-		return m.ExtraOpaqueData
 	}
 	return nil
 }
@@ -921,7 +706,7 @@ func (m *ResetMissionControlRequest) Reset()         { *m = ResetMissionControlR
 func (m *ResetMissionControlRequest) String() string { return proto.CompactTextString(m) }
 func (*ResetMissionControlRequest) ProtoMessage()    {}
 func (*ResetMissionControlRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{9}
+	return fileDescriptor_7a0613f69d37b0a5, []int{6}
 }
 
 func (m *ResetMissionControlRequest) XXX_Unmarshal(b []byte) error {
@@ -952,7 +737,7 @@ func (m *ResetMissionControlResponse) Reset()         { *m = ResetMissionControl
 func (m *ResetMissionControlResponse) String() string { return proto.CompactTextString(m) }
 func (*ResetMissionControlResponse) ProtoMessage()    {}
 func (*ResetMissionControlResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{10}
+	return fileDescriptor_7a0613f69d37b0a5, []int{7}
 }
 
 func (m *ResetMissionControlResponse) XXX_Unmarshal(b []byte) error {
@@ -983,7 +768,7 @@ func (m *QueryMissionControlRequest) Reset()         { *m = QueryMissionControlR
 func (m *QueryMissionControlRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryMissionControlRequest) ProtoMessage()    {}
 func (*QueryMissionControlRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{11}
+	return fileDescriptor_7a0613f69d37b0a5, []int{8}
 }
 
 func (m *QueryMissionControlRequest) XXX_Unmarshal(b []byte) error {
@@ -1006,8 +791,6 @@ var xxx_messageInfo_QueryMissionControlRequest proto.InternalMessageInfo
 
 /// QueryMissionControlResponse contains mission control state.
 type QueryMissionControlResponse struct {
-	/// Node-level mission control state.
-	Nodes []*NodeHistory `protobuf:"bytes,1,rep,name=nodes,proto3" json:"nodes,omitempty"`
 	/// Node pair-level mission control state.
 	Pairs                []*PairHistory `protobuf:"bytes,2,rep,name=pairs,proto3" json:"pairs,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
@@ -1019,7 +802,7 @@ func (m *QueryMissionControlResponse) Reset()         { *m = QueryMissionControl
 func (m *QueryMissionControlResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryMissionControlResponse) ProtoMessage()    {}
 func (*QueryMissionControlResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{12}
+	return fileDescriptor_7a0613f69d37b0a5, []int{9}
 }
 
 func (m *QueryMissionControlResponse) XXX_Unmarshal(b []byte) error {
@@ -1040,13 +823,6 @@ func (m *QueryMissionControlResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryMissionControlResponse proto.InternalMessageInfo
 
-func (m *QueryMissionControlResponse) GetNodes() []*NodeHistory {
-	if m != nil {
-		return m.Nodes
-	}
-	return nil
-}
-
 func (m *QueryMissionControlResponse) GetPairs() []*PairHistory {
 	if m != nil {
 		return m.Pairs
@@ -1054,91 +830,23 @@ func (m *QueryMissionControlResponse) GetPairs() []*PairHistory {
 	return nil
 }
 
-/// NodeHistory contains the mission control state for a particular node.
-type NodeHistory struct {
-	/// Node pubkey
-	Pubkey []byte `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
-	/// Time stamp of last failure. Set to zero if no failure happened yet.
-	LastFailTime int64 `protobuf:"varint,2,opt,name=last_fail_time,proto3" json:"last_fail_time,omitempty"`
-	//*
-	//Estimation of success probability of forwarding towards peers of this node
-	//for which no specific history is available.
-	OtherSuccessProb     float32  `protobuf:"fixed32,3,opt,name=other_success_prob,proto3" json:"other_success_prob,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *NodeHistory) Reset()         { *m = NodeHistory{} }
-func (m *NodeHistory) String() string { return proto.CompactTextString(m) }
-func (*NodeHistory) ProtoMessage()    {}
-func (*NodeHistory) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{13}
-}
-
-func (m *NodeHistory) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_NodeHistory.Unmarshal(m, b)
-}
-func (m *NodeHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_NodeHistory.Marshal(b, m, deterministic)
-}
-func (m *NodeHistory) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NodeHistory.Merge(m, src)
-}
-func (m *NodeHistory) XXX_Size() int {
-	return xxx_messageInfo_NodeHistory.Size(m)
-}
-func (m *NodeHistory) XXX_DiscardUnknown() {
-	xxx_messageInfo_NodeHistory.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_NodeHistory proto.InternalMessageInfo
-
-func (m *NodeHistory) GetPubkey() []byte {
-	if m != nil {
-		return m.Pubkey
-	}
-	return nil
-}
-
-func (m *NodeHistory) GetLastFailTime() int64 {
-	if m != nil {
-		return m.LastFailTime
-	}
-	return 0
-}
-
-func (m *NodeHistory) GetOtherSuccessProb() float32 {
-	if m != nil {
-		return m.OtherSuccessProb
-	}
-	return 0
-}
-
 /// PairHistory contains the mission control state for a particular node pair.
 type PairHistory struct {
 	/// The source node pubkey of the pair.
-	NodeFrom []byte `protobuf:"bytes,1,opt,name=node_from,proto3" json:"node_from,omitempty"`
+	NodeFrom []byte `protobuf:"bytes,1,opt,name=node_from,json=nodeFrom,proto3" json:"node_from,omitempty"`
 	/// The destination node pubkey of the pair.
-	NodeTo []byte `protobuf:"bytes,2,opt,name=node_to,proto3" json:"node_to,omitempty"`
-	/// Time stamp of last result.
-	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	/// Minimum penalization amount (only applies to failed attempts).
-	MinPenalizeAmtSat int64 `protobuf:"varint,4,opt,name=min_penalize_amt_sat,proto3" json:"min_penalize_amt_sat,omitempty"`
-	/// Estimation of success probability for this pair.
-	SuccessProb float32 `protobuf:"fixed32,5,opt,name=success_prob,proto3" json:"success_prob,omitempty"`
-	/// Whether the last payment attempt through this pair was successful.
-	LastAttemptSuccessful bool     `protobuf:"varint,6,opt,name=last_attempt_successful,proto3" json:"last_attempt_successful,omitempty"`
-	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
-	XXX_unrecognized      []byte   `json:"-"`
-	XXX_sizecache         int32    `json:"-"`
+	NodeTo               []byte    `protobuf:"bytes,2,opt,name=node_to,json=nodeTo,proto3" json:"node_to,omitempty"`
+	History              *PairData `protobuf:"bytes,7,opt,name=history,proto3" json:"history,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
 }
 
 func (m *PairHistory) Reset()         { *m = PairHistory{} }
 func (m *PairHistory) String() string { return proto.CompactTextString(m) }
 func (*PairHistory) ProtoMessage()    {}
 func (*PairHistory) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{14}
+	return fileDescriptor_7a0613f69d37b0a5, []int{10}
 }
 
 func (m *PairHistory) XXX_Unmarshal(b []byte) error {
@@ -1173,32 +881,207 @@ func (m *PairHistory) GetNodeTo() []byte {
 	return nil
 }
 
-func (m *PairHistory) GetTimestamp() int64 {
+func (m *PairHistory) GetHistory() *PairData {
 	if m != nil {
-		return m.Timestamp
+		return m.History
+	}
+	return nil
+}
+
+type PairData struct {
+	/// Time of last failure.
+	FailTime int64 `protobuf:"varint,1,opt,name=fail_time,json=failTime,proto3" json:"fail_time,omitempty"`
+	//*
+	//Lowest amount that failed to forward rounded to whole sats. This may be
+	//set to zero if the failure is independent of amount.
+	FailAmtSat int64 `protobuf:"varint,2,opt,name=fail_amt_sat,json=failAmtSat,proto3" json:"fail_amt_sat,omitempty"`
+	//*
+	//Lowest amount that failed to forward in millisats. This may be
+	//set to zero if the failure is independent of amount.
+	FailAmtMsat int64 `protobuf:"varint,4,opt,name=fail_amt_msat,json=failAmtMsat,proto3" json:"fail_amt_msat,omitempty"`
+	/// Time of last success.
+	SuccessTime int64 `protobuf:"varint,5,opt,name=success_time,json=successTime,proto3" json:"success_time,omitempty"`
+	/// Highest amount that we could successfully forward rounded to whole sats.
+	SuccessAmtSat int64 `protobuf:"varint,6,opt,name=success_amt_sat,json=successAmtSat,proto3" json:"success_amt_sat,omitempty"`
+	/// Highest amount that we could successfully forward in millisats.
+	SuccessAmtMsat       int64    `protobuf:"varint,7,opt,name=success_amt_msat,json=successAmtMsat,proto3" json:"success_amt_msat,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *PairData) Reset()         { *m = PairData{} }
+func (m *PairData) String() string { return proto.CompactTextString(m) }
+func (*PairData) ProtoMessage()    {}
+func (*PairData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{11}
+}
+
+func (m *PairData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PairData.Unmarshal(m, b)
+}
+func (m *PairData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PairData.Marshal(b, m, deterministic)
+}
+func (m *PairData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PairData.Merge(m, src)
+}
+func (m *PairData) XXX_Size() int {
+	return xxx_messageInfo_PairData.Size(m)
+}
+func (m *PairData) XXX_DiscardUnknown() {
+	xxx_messageInfo_PairData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PairData proto.InternalMessageInfo
+
+func (m *PairData) GetFailTime() int64 {
+	if m != nil {
+		return m.FailTime
 	}
 	return 0
 }
 
-func (m *PairHistory) GetMinPenalizeAmtSat() int64 {
+func (m *PairData) GetFailAmtSat() int64 {
 	if m != nil {
-		return m.MinPenalizeAmtSat
+		return m.FailAmtSat
 	}
 	return 0
 }
 
-func (m *PairHistory) GetSuccessProb() float32 {
+func (m *PairData) GetFailAmtMsat() int64 {
 	if m != nil {
-		return m.SuccessProb
+		return m.FailAmtMsat
 	}
 	return 0
 }
 
-func (m *PairHistory) GetLastAttemptSuccessful() bool {
+func (m *PairData) GetSuccessTime() int64 {
 	if m != nil {
-		return m.LastAttemptSuccessful
+		return m.SuccessTime
 	}
-	return false
+	return 0
+}
+
+func (m *PairData) GetSuccessAmtSat() int64 {
+	if m != nil {
+		return m.SuccessAmtSat
+	}
+	return 0
+}
+
+func (m *PairData) GetSuccessAmtMsat() int64 {
+	if m != nil {
+		return m.SuccessAmtMsat
+	}
+	return 0
+}
+
+type QueryProbabilityRequest struct {
+	/// The source node pubkey of the pair.
+	FromNode []byte `protobuf:"bytes,1,opt,name=from_node,json=fromNode,proto3" json:"from_node,omitempty"`
+	/// The destination node pubkey of the pair.
+	ToNode []byte `protobuf:"bytes,2,opt,name=to_node,json=toNode,proto3" json:"to_node,omitempty"`
+	/// The amount for which to calculate a probability.
+	AmtMsat              int64    `protobuf:"varint,3,opt,name=amt_msat,json=amtMsat,proto3" json:"amt_msat,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *QueryProbabilityRequest) Reset()         { *m = QueryProbabilityRequest{} }
+func (m *QueryProbabilityRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryProbabilityRequest) ProtoMessage()    {}
+func (*QueryProbabilityRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{12}
+}
+
+func (m *QueryProbabilityRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_QueryProbabilityRequest.Unmarshal(m, b)
+}
+func (m *QueryProbabilityRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_QueryProbabilityRequest.Marshal(b, m, deterministic)
+}
+func (m *QueryProbabilityRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryProbabilityRequest.Merge(m, src)
+}
+func (m *QueryProbabilityRequest) XXX_Size() int {
+	return xxx_messageInfo_QueryProbabilityRequest.Size(m)
+}
+func (m *QueryProbabilityRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryProbabilityRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryProbabilityRequest proto.InternalMessageInfo
+
+func (m *QueryProbabilityRequest) GetFromNode() []byte {
+	if m != nil {
+		return m.FromNode
+	}
+	return nil
+}
+
+func (m *QueryProbabilityRequest) GetToNode() []byte {
+	if m != nil {
+		return m.ToNode
+	}
+	return nil
+}
+
+func (m *QueryProbabilityRequest) GetAmtMsat() int64 {
+	if m != nil {
+		return m.AmtMsat
+	}
+	return 0
+}
+
+type QueryProbabilityResponse struct {
+	/// The success probability for the requested pair.
+	Probability float64 `protobuf:"fixed64,1,opt,name=probability,proto3" json:"probability,omitempty"`
+	/// The historical data for the requested pair.
+	History              *PairData `protobuf:"bytes,2,opt,name=history,proto3" json:"history,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *QueryProbabilityResponse) Reset()         { *m = QueryProbabilityResponse{} }
+func (m *QueryProbabilityResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryProbabilityResponse) ProtoMessage()    {}
+func (*QueryProbabilityResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{13}
+}
+
+func (m *QueryProbabilityResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_QueryProbabilityResponse.Unmarshal(m, b)
+}
+func (m *QueryProbabilityResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_QueryProbabilityResponse.Marshal(b, m, deterministic)
+}
+func (m *QueryProbabilityResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryProbabilityResponse.Merge(m, src)
+}
+func (m *QueryProbabilityResponse) XXX_Size() int {
+	return xxx_messageInfo_QueryProbabilityResponse.Size(m)
+}
+func (m *QueryProbabilityResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryProbabilityResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryProbabilityResponse proto.InternalMessageInfo
+
+func (m *QueryProbabilityResponse) GetProbability() float64 {
+	if m != nil {
+		return m.Probability
+	}
+	return 0
+}
+
+func (m *QueryProbabilityResponse) GetHistory() *PairData {
+	if m != nil {
+		return m.History
+	}
+	return nil
 }
 
 type BuildRouteRequest struct {
@@ -1227,7 +1110,7 @@ func (m *BuildRouteRequest) Reset()         { *m = BuildRouteRequest{} }
 func (m *BuildRouteRequest) String() string { return proto.CompactTextString(m) }
 func (*BuildRouteRequest) ProtoMessage()    {}
 func (*BuildRouteRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{15}
+	return fileDescriptor_7a0613f69d37b0a5, []int{14}
 }
 
 func (m *BuildRouteRequest) XXX_Unmarshal(b []byte) error {
@@ -1289,7 +1172,7 @@ func (m *BuildRouteResponse) Reset()         { *m = BuildRouteResponse{} }
 func (m *BuildRouteResponse) String() string { return proto.CompactTextString(m) }
 func (*BuildRouteResponse) ProtoMessage()    {}
 func (*BuildRouteResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7a0613f69d37b0a5, []int{16}
+	return fileDescriptor_7a0613f69d37b0a5, []int{15}
 }
 
 func (m *BuildRouteResponse) XXX_Unmarshal(b []byte) error {
@@ -1317,150 +1200,694 @@ func (m *BuildRouteResponse) GetRoute() *lnrpc.Route {
 	return nil
 }
 
+type SubscribeHtlcEventsRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SubscribeHtlcEventsRequest) Reset()         { *m = SubscribeHtlcEventsRequest{} }
+func (m *SubscribeHtlcEventsRequest) String() string { return proto.CompactTextString(m) }
+func (*SubscribeHtlcEventsRequest) ProtoMessage()    {}
+func (*SubscribeHtlcEventsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{16}
+}
+
+func (m *SubscribeHtlcEventsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SubscribeHtlcEventsRequest.Unmarshal(m, b)
+}
+func (m *SubscribeHtlcEventsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SubscribeHtlcEventsRequest.Marshal(b, m, deterministic)
+}
+func (m *SubscribeHtlcEventsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SubscribeHtlcEventsRequest.Merge(m, src)
+}
+func (m *SubscribeHtlcEventsRequest) XXX_Size() int {
+	return xxx_messageInfo_SubscribeHtlcEventsRequest.Size(m)
+}
+func (m *SubscribeHtlcEventsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SubscribeHtlcEventsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SubscribeHtlcEventsRequest proto.InternalMessageInfo
+
+//*
+//HtlcEvent contains the htlc event that was processed. These are served on a
+//best-effort basis; events are not persisted, delivery is not guaranteed
+//(in the event of a crash in the switch, forward events may be lost) and
+//some events may be replayed upon restart. Events consumed from this package
+//should be de-duplicated by the htlc's unique combination of incoming and
+//outgoing channel id and htlc id. [EXPERIMENTAL]
+type HtlcEvent struct {
+	//*
+	//The short channel id that the incoming htlc arrived at our node on. This
+	//value is zero for sends.
+	IncomingChannelId uint64 `protobuf:"varint,1,opt,name=incoming_channel_id,json=incomingChannelId,proto3" json:"incoming_channel_id,omitempty"`
+	//*
+	//The short channel id that the outgoing htlc left our node on. This value
+	//is zero for receives.
+	OutgoingChannelId uint64 `protobuf:"varint,2,opt,name=outgoing_channel_id,json=outgoingChannelId,proto3" json:"outgoing_channel_id,omitempty"`
+	//*
+	//Incoming id is the index of the incoming htlc in the incoming channel.
+	//This value is zero for sends.
+	IncomingHtlcId uint64 `protobuf:"varint,3,opt,name=incoming_htlc_id,json=incomingHtlcId,proto3" json:"incoming_htlc_id,omitempty"`
+	//*
+	//Outgoing id is the index of the outgoing htlc in the outgoing channel.
+	//This value is zero for receives.
+	OutgoingHtlcId uint64 `protobuf:"varint,4,opt,name=outgoing_htlc_id,json=outgoingHtlcId,proto3" json:"outgoing_htlc_id,omitempty"`
+	//*
+	//The time in unix nanoseconds that the event occurred.
+	TimestampNs uint64 `protobuf:"varint,5,opt,name=timestamp_ns,json=timestampNs,proto3" json:"timestamp_ns,omitempty"`
+	//*
+	//The event type indicates whether the htlc was part of a send, receive or
+	//forward.
+	EventType HtlcEvent_EventType `protobuf:"varint,6,opt,name=event_type,json=eventType,proto3,enum=routerrpc.HtlcEvent_EventType" json:"event_type,omitempty"`
+	// Types that are valid to be assigned to Event:
+	//	*HtlcEvent_ForwardEvent
+	//	*HtlcEvent_ForwardFailEvent
+	//	*HtlcEvent_SettleEvent
+	//	*HtlcEvent_LinkFailEvent
+	Event                isHtlcEvent_Event `protobuf_oneof:"event"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *HtlcEvent) Reset()         { *m = HtlcEvent{} }
+func (m *HtlcEvent) String() string { return proto.CompactTextString(m) }
+func (*HtlcEvent) ProtoMessage()    {}
+func (*HtlcEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{17}
+}
+
+func (m *HtlcEvent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HtlcEvent.Unmarshal(m, b)
+}
+func (m *HtlcEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HtlcEvent.Marshal(b, m, deterministic)
+}
+func (m *HtlcEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HtlcEvent.Merge(m, src)
+}
+func (m *HtlcEvent) XXX_Size() int {
+	return xxx_messageInfo_HtlcEvent.Size(m)
+}
+func (m *HtlcEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_HtlcEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HtlcEvent proto.InternalMessageInfo
+
+func (m *HtlcEvent) GetIncomingChannelId() uint64 {
+	if m != nil {
+		return m.IncomingChannelId
+	}
+	return 0
+}
+
+func (m *HtlcEvent) GetOutgoingChannelId() uint64 {
+	if m != nil {
+		return m.OutgoingChannelId
+	}
+	return 0
+}
+
+func (m *HtlcEvent) GetIncomingHtlcId() uint64 {
+	if m != nil {
+		return m.IncomingHtlcId
+	}
+	return 0
+}
+
+func (m *HtlcEvent) GetOutgoingHtlcId() uint64 {
+	if m != nil {
+		return m.OutgoingHtlcId
+	}
+	return 0
+}
+
+func (m *HtlcEvent) GetTimestampNs() uint64 {
+	if m != nil {
+		return m.TimestampNs
+	}
+	return 0
+}
+
+func (m *HtlcEvent) GetEventType() HtlcEvent_EventType {
+	if m != nil {
+		return m.EventType
+	}
+	return HtlcEvent_UNKNOWN
+}
+
+type isHtlcEvent_Event interface {
+	isHtlcEvent_Event()
+}
+
+type HtlcEvent_ForwardEvent struct {
+	ForwardEvent *ForwardEvent `protobuf:"bytes,7,opt,name=forward_event,json=forwardEvent,proto3,oneof"`
+}
+
+type HtlcEvent_ForwardFailEvent struct {
+	ForwardFailEvent *ForwardFailEvent `protobuf:"bytes,8,opt,name=forward_fail_event,json=forwardFailEvent,proto3,oneof"`
+}
+
+type HtlcEvent_SettleEvent struct {
+	SettleEvent *SettleEvent `protobuf:"bytes,9,opt,name=settle_event,json=settleEvent,proto3,oneof"`
+}
+
+type HtlcEvent_LinkFailEvent struct {
+	LinkFailEvent *LinkFailEvent `protobuf:"bytes,10,opt,name=link_fail_event,json=linkFailEvent,proto3,oneof"`
+}
+
+func (*HtlcEvent_ForwardEvent) isHtlcEvent_Event() {}
+
+func (*HtlcEvent_ForwardFailEvent) isHtlcEvent_Event() {}
+
+func (*HtlcEvent_SettleEvent) isHtlcEvent_Event() {}
+
+func (*HtlcEvent_LinkFailEvent) isHtlcEvent_Event() {}
+
+func (m *HtlcEvent) GetEvent() isHtlcEvent_Event {
+	if m != nil {
+		return m.Event
+	}
+	return nil
+}
+
+func (m *HtlcEvent) GetForwardEvent() *ForwardEvent {
+	if x, ok := m.GetEvent().(*HtlcEvent_ForwardEvent); ok {
+		return x.ForwardEvent
+	}
+	return nil
+}
+
+func (m *HtlcEvent) GetForwardFailEvent() *ForwardFailEvent {
+	if x, ok := m.GetEvent().(*HtlcEvent_ForwardFailEvent); ok {
+		return x.ForwardFailEvent
+	}
+	return nil
+}
+
+func (m *HtlcEvent) GetSettleEvent() *SettleEvent {
+	if x, ok := m.GetEvent().(*HtlcEvent_SettleEvent); ok {
+		return x.SettleEvent
+	}
+	return nil
+}
+
+func (m *HtlcEvent) GetLinkFailEvent() *LinkFailEvent {
+	if x, ok := m.GetEvent().(*HtlcEvent_LinkFailEvent); ok {
+		return x.LinkFailEvent
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*HtlcEvent) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*HtlcEvent_ForwardEvent)(nil),
+		(*HtlcEvent_ForwardFailEvent)(nil),
+		(*HtlcEvent_SettleEvent)(nil),
+		(*HtlcEvent_LinkFailEvent)(nil),
+	}
+}
+
+type HtlcInfo struct {
+	// The timelock on the incoming htlc.
+	IncomingTimelock uint32 `protobuf:"varint,1,opt,name=incoming_timelock,json=incomingTimelock,proto3" json:"incoming_timelock,omitempty"`
+	// The timelock on the outgoing htlc.
+	OutgoingTimelock uint32 `protobuf:"varint,2,opt,name=outgoing_timelock,json=outgoingTimelock,proto3" json:"outgoing_timelock,omitempty"`
+	// The amount of the incoming htlc.
+	IncomingAmtMsat uint64 `protobuf:"varint,3,opt,name=incoming_amt_msat,json=incomingAmtMsat,proto3" json:"incoming_amt_msat,omitempty"`
+	// The amount of the outgoing htlc.
+	OutgoingAmtMsat      uint64   `protobuf:"varint,4,opt,name=outgoing_amt_msat,json=outgoingAmtMsat,proto3" json:"outgoing_amt_msat,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *HtlcInfo) Reset()         { *m = HtlcInfo{} }
+func (m *HtlcInfo) String() string { return proto.CompactTextString(m) }
+func (*HtlcInfo) ProtoMessage()    {}
+func (*HtlcInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{18}
+}
+
+func (m *HtlcInfo) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HtlcInfo.Unmarshal(m, b)
+}
+func (m *HtlcInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HtlcInfo.Marshal(b, m, deterministic)
+}
+func (m *HtlcInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HtlcInfo.Merge(m, src)
+}
+func (m *HtlcInfo) XXX_Size() int {
+	return xxx_messageInfo_HtlcInfo.Size(m)
+}
+func (m *HtlcInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_HtlcInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HtlcInfo proto.InternalMessageInfo
+
+func (m *HtlcInfo) GetIncomingTimelock() uint32 {
+	if m != nil {
+		return m.IncomingTimelock
+	}
+	return 0
+}
+
+func (m *HtlcInfo) GetOutgoingTimelock() uint32 {
+	if m != nil {
+		return m.OutgoingTimelock
+	}
+	return 0
+}
+
+func (m *HtlcInfo) GetIncomingAmtMsat() uint64 {
+	if m != nil {
+		return m.IncomingAmtMsat
+	}
+	return 0
+}
+
+func (m *HtlcInfo) GetOutgoingAmtMsat() uint64 {
+	if m != nil {
+		return m.OutgoingAmtMsat
+	}
+	return 0
+}
+
+type ForwardEvent struct {
+	// Info contains details about the htlc that was forwarded.
+	Info                 *HtlcInfo `protobuf:"bytes,1,opt,name=info,proto3" json:"info,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *ForwardEvent) Reset()         { *m = ForwardEvent{} }
+func (m *ForwardEvent) String() string { return proto.CompactTextString(m) }
+func (*ForwardEvent) ProtoMessage()    {}
+func (*ForwardEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{19}
+}
+
+func (m *ForwardEvent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ForwardEvent.Unmarshal(m, b)
+}
+func (m *ForwardEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ForwardEvent.Marshal(b, m, deterministic)
+}
+func (m *ForwardEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ForwardEvent.Merge(m, src)
+}
+func (m *ForwardEvent) XXX_Size() int {
+	return xxx_messageInfo_ForwardEvent.Size(m)
+}
+func (m *ForwardEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ForwardEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ForwardEvent proto.InternalMessageInfo
+
+func (m *ForwardEvent) GetInfo() *HtlcInfo {
+	if m != nil {
+		return m.Info
+	}
+	return nil
+}
+
+type ForwardFailEvent struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ForwardFailEvent) Reset()         { *m = ForwardFailEvent{} }
+func (m *ForwardFailEvent) String() string { return proto.CompactTextString(m) }
+func (*ForwardFailEvent) ProtoMessage()    {}
+func (*ForwardFailEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{20}
+}
+
+func (m *ForwardFailEvent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ForwardFailEvent.Unmarshal(m, b)
+}
+func (m *ForwardFailEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ForwardFailEvent.Marshal(b, m, deterministic)
+}
+func (m *ForwardFailEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ForwardFailEvent.Merge(m, src)
+}
+func (m *ForwardFailEvent) XXX_Size() int {
+	return xxx_messageInfo_ForwardFailEvent.Size(m)
+}
+func (m *ForwardFailEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ForwardFailEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ForwardFailEvent proto.InternalMessageInfo
+
+type SettleEvent struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SettleEvent) Reset()         { *m = SettleEvent{} }
+func (m *SettleEvent) String() string { return proto.CompactTextString(m) }
+func (*SettleEvent) ProtoMessage()    {}
+func (*SettleEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{21}
+}
+
+func (m *SettleEvent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SettleEvent.Unmarshal(m, b)
+}
+func (m *SettleEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SettleEvent.Marshal(b, m, deterministic)
+}
+func (m *SettleEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SettleEvent.Merge(m, src)
+}
+func (m *SettleEvent) XXX_Size() int {
+	return xxx_messageInfo_SettleEvent.Size(m)
+}
+func (m *SettleEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_SettleEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SettleEvent proto.InternalMessageInfo
+
+type LinkFailEvent struct {
+	// Info contains details about the htlc that we failed.
+	Info *HtlcInfo `protobuf:"bytes,1,opt,name=info,proto3" json:"info,omitempty"`
+	// FailureCode is the BOLT error code for the failure.
+	WireFailure lnrpc.Failure_FailureCode `protobuf:"varint,2,opt,name=wire_failure,json=wireFailure,proto3,enum=lnrpc.Failure_FailureCode" json:"wire_failure,omitempty"`
+	//*
+	//FailureDetail provides additional information about the reason for the
+	//failure. This detail enriches the information provided by the wire message
+	//and may be 'no detail' if the wire message requires no additional metadata.
+	FailureDetail FailureDetail `protobuf:"varint,3,opt,name=failure_detail,json=failureDetail,proto3,enum=routerrpc.FailureDetail" json:"failure_detail,omitempty"`
+	// A string representation of the link failure.
+	FailureString        string   `protobuf:"bytes,4,opt,name=failure_string,json=failureString,proto3" json:"failure_string,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *LinkFailEvent) Reset()         { *m = LinkFailEvent{} }
+func (m *LinkFailEvent) String() string { return proto.CompactTextString(m) }
+func (*LinkFailEvent) ProtoMessage()    {}
+func (*LinkFailEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{22}
+}
+
+func (m *LinkFailEvent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LinkFailEvent.Unmarshal(m, b)
+}
+func (m *LinkFailEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LinkFailEvent.Marshal(b, m, deterministic)
+}
+func (m *LinkFailEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LinkFailEvent.Merge(m, src)
+}
+func (m *LinkFailEvent) XXX_Size() int {
+	return xxx_messageInfo_LinkFailEvent.Size(m)
+}
+func (m *LinkFailEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_LinkFailEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LinkFailEvent proto.InternalMessageInfo
+
+func (m *LinkFailEvent) GetInfo() *HtlcInfo {
+	if m != nil {
+		return m.Info
+	}
+	return nil
+}
+
+func (m *LinkFailEvent) GetWireFailure() lnrpc.Failure_FailureCode {
+	if m != nil {
+		return m.WireFailure
+	}
+	return lnrpc.Failure_RESERVED
+}
+
+func (m *LinkFailEvent) GetFailureDetail() FailureDetail {
+	if m != nil {
+		return m.FailureDetail
+	}
+	return FailureDetail_UNKNOWN
+}
+
+func (m *LinkFailEvent) GetFailureString() string {
+	if m != nil {
+		return m.FailureString
+	}
+	return ""
+}
+
+type PaymentStatus struct {
+	/// Current state the payment is in.
+	State PaymentState `protobuf:"varint,1,opt,name=state,proto3,enum=routerrpc.PaymentState" json:"state,omitempty"`
+	//*
+	//The pre-image of the payment when state is SUCCEEDED.
+	Preimage []byte `protobuf:"bytes,2,opt,name=preimage,proto3" json:"preimage,omitempty"`
+	//*
+	//The HTLCs made in attempt to settle the payment [EXPERIMENTAL].
+	Htlcs                []*lnrpc.HTLCAttempt `protobuf:"bytes,4,rep,name=htlcs,proto3" json:"htlcs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *PaymentStatus) Reset()         { *m = PaymentStatus{} }
+func (m *PaymentStatus) String() string { return proto.CompactTextString(m) }
+func (*PaymentStatus) ProtoMessage()    {}
+func (*PaymentStatus) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7a0613f69d37b0a5, []int{23}
+}
+
+func (m *PaymentStatus) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PaymentStatus.Unmarshal(m, b)
+}
+func (m *PaymentStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PaymentStatus.Marshal(b, m, deterministic)
+}
+func (m *PaymentStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PaymentStatus.Merge(m, src)
+}
+func (m *PaymentStatus) XXX_Size() int {
+	return xxx_messageInfo_PaymentStatus.Size(m)
+}
+func (m *PaymentStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_PaymentStatus.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PaymentStatus proto.InternalMessageInfo
+
+func (m *PaymentStatus) GetState() PaymentState {
+	if m != nil {
+		return m.State
+	}
+	return PaymentState_IN_FLIGHT
+}
+
+func (m *PaymentStatus) GetPreimage() []byte {
+	if m != nil {
+		return m.Preimage
+	}
+	return nil
+}
+
+func (m *PaymentStatus) GetHtlcs() []*lnrpc.HTLCAttempt {
+	if m != nil {
+		return m.Htlcs
+	}
+	return nil
+}
+
 func init() {
+	proto.RegisterEnum("routerrpc.FailureDetail", FailureDetail_name, FailureDetail_value)
 	proto.RegisterEnum("routerrpc.PaymentState", PaymentState_name, PaymentState_value)
-	proto.RegisterEnum("routerrpc.Failure_FailureCode", Failure_FailureCode_name, Failure_FailureCode_value)
+	proto.RegisterEnum("routerrpc.HtlcEvent_EventType", HtlcEvent_EventType_name, HtlcEvent_EventType_value)
 	proto.RegisterType((*SendPaymentRequest)(nil), "routerrpc.SendPaymentRequest")
-	proto.RegisterMapType((map[uint64][]byte)(nil), "routerrpc.SendPaymentRequest.DestTlvEntry")
+	proto.RegisterMapType((map[uint64][]byte)(nil), "routerrpc.SendPaymentRequest.DestCustomRecordsEntry")
 	proto.RegisterType((*TrackPaymentRequest)(nil), "routerrpc.TrackPaymentRequest")
-	proto.RegisterType((*PaymentStatus)(nil), "routerrpc.PaymentStatus")
 	proto.RegisterType((*RouteFeeRequest)(nil), "routerrpc.RouteFeeRequest")
 	proto.RegisterType((*RouteFeeResponse)(nil), "routerrpc.RouteFeeResponse")
 	proto.RegisterType((*SendToRouteRequest)(nil), "routerrpc.SendToRouteRequest")
 	proto.RegisterType((*SendToRouteResponse)(nil), "routerrpc.SendToRouteResponse")
-	proto.RegisterType((*Failure)(nil), "routerrpc.Failure")
-	proto.RegisterType((*ChannelUpdate)(nil), "routerrpc.ChannelUpdate")
 	proto.RegisterType((*ResetMissionControlRequest)(nil), "routerrpc.ResetMissionControlRequest")
 	proto.RegisterType((*ResetMissionControlResponse)(nil), "routerrpc.ResetMissionControlResponse")
 	proto.RegisterType((*QueryMissionControlRequest)(nil), "routerrpc.QueryMissionControlRequest")
 	proto.RegisterType((*QueryMissionControlResponse)(nil), "routerrpc.QueryMissionControlResponse")
-	proto.RegisterType((*NodeHistory)(nil), "routerrpc.NodeHistory")
 	proto.RegisterType((*PairHistory)(nil), "routerrpc.PairHistory")
+	proto.RegisterType((*PairData)(nil), "routerrpc.PairData")
+	proto.RegisterType((*QueryProbabilityRequest)(nil), "routerrpc.QueryProbabilityRequest")
+	proto.RegisterType((*QueryProbabilityResponse)(nil), "routerrpc.QueryProbabilityResponse")
 	proto.RegisterType((*BuildRouteRequest)(nil), "routerrpc.BuildRouteRequest")
 	proto.RegisterType((*BuildRouteResponse)(nil), "routerrpc.BuildRouteResponse")
+	proto.RegisterType((*SubscribeHtlcEventsRequest)(nil), "routerrpc.SubscribeHtlcEventsRequest")
+	proto.RegisterType((*HtlcEvent)(nil), "routerrpc.HtlcEvent")
+	proto.RegisterType((*HtlcInfo)(nil), "routerrpc.HtlcInfo")
+	proto.RegisterType((*ForwardEvent)(nil), "routerrpc.ForwardEvent")
+	proto.RegisterType((*ForwardFailEvent)(nil), "routerrpc.ForwardFailEvent")
+	proto.RegisterType((*SettleEvent)(nil), "routerrpc.SettleEvent")
+	proto.RegisterType((*LinkFailEvent)(nil), "routerrpc.LinkFailEvent")
+	proto.RegisterType((*PaymentStatus)(nil), "routerrpc.PaymentStatus")
 }
 
 func init() { proto.RegisterFile("routerrpc/router.proto", fileDescriptor_7a0613f69d37b0a5) }
 
 var fileDescriptor_7a0613f69d37b0a5 = []byte{
-	// 1867 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x58, 0x4f, 0x73, 0x22, 0xc7,
-	0x15, 0x37, 0x02, 0x04, 0x3c, 0x40, 0x1a, 0xb5, 0xb4, 0xd2, 0x2c, 0x92, 0xbc, 0x32, 0x76, 0xd6,
-	0xaa, 0x2d, 0x47, 0x72, 0x94, 0xb2, 0x6b, 0xcb, 0x87, 0xa4, 0x58, 0x68, 0xac, 0xd9, 0x85, 0x19,
-	0xb9, 0x81, 0xb5, 0x37, 0x39, 0x74, 0xb5, 0xa0, 0x25, 0xa6, 0x34, 0xcc, 0xe0, 0x99, 0x46, 0x59,
-	0xe5, 0x90, 0x4b, 0xce, 0xf9, 0x14, 0xb9, 0xa6, 0x2a, 0x5f, 0x25, 0x9f, 0x22, 0xf9, 0x04, 0x7b,
-	0x4c, 0x55, 0xaa, 0xbb, 0x67, 0x60, 0x90, 0xd0, 0xc6, 0x27, 0x4d, 0xff, 0xde, 0xeb, 0xd7, 0xaf,
-	0xdf, 0x9f, 0x5f, 0x3f, 0x01, 0xbb, 0x61, 0x30, 0x13, 0x3c, 0x0c, 0xa7, 0xc3, 0x53, 0xfd, 0x75,
-	0x32, 0x0d, 0x03, 0x11, 0xa0, 0xd2, 0x1c, 0xaf, 0x95, 0xc2, 0xe9, 0x50, 0xa3, 0xf5, 0xff, 0x66,
-	0x01, 0xf5, 0xb8, 0x3f, 0xba, 0x60, 0x77, 0x13, 0xee, 0x0b, 0xc2, 0x7f, 0x9e, 0xf1, 0x48, 0x20,
-	0x04, 0xb9, 0x11, 0x8f, 0x84, 0x99, 0x39, 0xca, 0x1c, 0x57, 0x88, 0xfa, 0x46, 0x06, 0x64, 0xd9,
-	0x44, 0x98, 0x6b, 0x47, 0x99, 0xe3, 0x2c, 0x91, 0x9f, 0xe8, 0x33, 0xa8, 0x4c, 0xf5, 0x3e, 0x3a,
-	0x66, 0xd1, 0xd8, 0xcc, 0x2a, 0xed, 0x72, 0x8c, 0x9d, 0xb3, 0x68, 0x8c, 0x8e, 0xc1, 0xb8, 0x72,
-	0x7d, 0xe6, 0xd1, 0xa1, 0x27, 0x6e, 0xe9, 0x88, 0x7b, 0x82, 0x99, 0xb9, 0xa3, 0xcc, 0x71, 0x9e,
-	0x6c, 0x28, 0xbc, 0xe9, 0x89, 0xdb, 0x96, 0x44, 0xd1, 0x97, 0xb0, 0x99, 0x18, 0x0b, 0xb5, 0x17,
-	0x66, 0xfe, 0x28, 0x73, 0x5c, 0x22, 0x1b, 0xd3, 0x65, 0xdf, 0xbe, 0x84, 0x4d, 0xe1, 0x4e, 0x78,
-	0x30, 0x13, 0x34, 0xe2, 0xc3, 0xc0, 0x1f, 0x45, 0xe6, 0xba, 0xb6, 0x18, 0xc3, 0x3d, 0x8d, 0xa2,
-	0x3a, 0x54, 0xaf, 0x38, 0xa7, 0x9e, 0x3b, 0x71, 0x05, 0x8d, 0x98, 0x30, 0x0b, 0xca, 0xf5, 0xf2,
-	0x15, 0xe7, 0x1d, 0x89, 0xf5, 0x98, 0x90, 0xfe, 0x05, 0x33, 0x71, 0x1d, 0xb8, 0xfe, 0x35, 0x1d,
-	0x8e, 0x99, 0x4f, 0xdd, 0x91, 0x59, 0x3c, 0xca, 0x1c, 0xe7, 0xc8, 0x46, 0x82, 0x37, 0xc7, 0xcc,
-	0xb7, 0x46, 0xe8, 0x10, 0x40, 0xdd, 0x41, 0x99, 0x33, 0x4b, 0xea, 0xc4, 0x92, 0x44, 0x94, 0x2d,
-	0x74, 0x06, 0x65, 0x15, 0x60, 0x3a, 0x76, 0x7d, 0x11, 0x99, 0x70, 0x94, 0x3d, 0x2e, 0x9f, 0x19,
-	0x27, 0x9e, 0x2f, 0x63, 0x4d, 0xa4, 0xe4, 0xdc, 0xf5, 0x05, 0x49, 0x2b, 0x21, 0x0c, 0x45, 0x19,
-	0x59, 0x2a, 0xbc, 0x5b, 0xb3, 0xac, 0x36, 0xbc, 0x38, 0x99, 0x67, 0xe9, 0xe4, 0x61, 0x5a, 0x4e,
-	0x5a, 0x3c, 0x12, 0x7d, 0xef, 0x16, 0xfb, 0x22, 0xbc, 0x23, 0x85, 0x91, 0x5e, 0xd5, 0xbe, 0x83,
-	0x4a, 0x5a, 0x20, 0x13, 0x75, 0xc3, 0xef, 0x54, 0xee, 0x72, 0x44, 0x7e, 0xa2, 0x1d, 0xc8, 0xdf,
-	0x32, 0x6f, 0xc6, 0x55, 0xf2, 0x2a, 0x44, 0x2f, 0xbe, 0x5b, 0x7b, 0x99, 0xa9, 0xbf, 0x84, 0xed,
-	0x7e, 0xc8, 0x86, 0x37, 0xf7, 0xf2, 0x7f, 0x3f, 0xb3, 0x99, 0x07, 0x99, 0xad, 0xff, 0x05, 0xaa,
-	0xf1, 0xa6, 0x9e, 0x60, 0x62, 0x16, 0xa1, 0x5f, 0x43, 0x3e, 0x12, 0x4c, 0x70, 0xa5, 0xbc, 0x71,
-	0xb6, 0x97, 0xba, 0x4a, 0x4a, 0x91, 0x13, 0xad, 0x85, 0x6a, 0x50, 0x9c, 0x86, 0xdc, 0x9d, 0xb0,
-	0xeb, 0xc4, 0xad, 0xf9, 0x1a, 0xd5, 0x21, 0xaf, 0x36, 0xab, 0x8a, 0x2a, 0x9f, 0x55, 0xd2, 0x61,
-	0x24, 0x5a, 0x54, 0xff, 0x1d, 0x6c, 0xaa, 0x75, 0x9b, 0xf3, 0x8f, 0x55, 0xed, 0x1e, 0x14, 0xd8,
-	0x44, 0xa7, 0x5f, 0x57, 0xee, 0x3a, 0x9b, 0xc8, 0xcc, 0xd7, 0x47, 0x60, 0x2c, 0xf6, 0x47, 0xd3,
-	0xc0, 0x8f, 0xb8, 0xac, 0x06, 0x69, 0x5c, 0x16, 0x83, 0xac, 0x9c, 0x89, 0xdc, 0x95, 0x51, 0xbb,
-	0x36, 0x62, 0xbc, 0xcd, 0x79, 0x37, 0x62, 0x02, 0x3d, 0xd7, 0x45, 0x48, 0xbd, 0x60, 0x78, 0x23,
-	0xcb, 0x9a, 0xdd, 0xc5, 0xe6, 0xab, 0x12, 0xee, 0x04, 0xc3, 0x9b, 0x96, 0x04, 0xeb, 0x7f, 0xd4,
-	0xed, 0xd5, 0x0f, 0xb4, 0xef, 0xbf, 0x38, 0xbc, 0x8b, 0x10, 0xac, 0x3d, 0x1e, 0x02, 0x0a, 0xdb,
-	0x4b, 0xc6, 0xe3, 0x5b, 0xa4, 0x23, 0x9b, 0xb9, 0x17, 0xd9, 0xaf, 0xa0, 0x70, 0xc5, 0x5c, 0x6f,
-	0x16, 0x26, 0x86, 0x51, 0x2a, 0x4d, 0x6d, 0x2d, 0x21, 0x89, 0x4a, 0xfd, 0x43, 0x01, 0x0a, 0x31,
-	0x88, 0xce, 0x20, 0x37, 0x0c, 0x46, 0x49, 0x76, 0x3f, 0x7d, 0xb8, 0x2d, 0xf9, 0xdb, 0x0c, 0x46,
-	0x9c, 0x28, 0x5d, 0xf4, 0x7b, 0xd8, 0x90, 0x4d, 0xe5, 0x73, 0x8f, 0xce, 0xa6, 0x23, 0x36, 0x4f,
-	0xa8, 0x99, 0xda, 0xdd, 0xd4, 0x0a, 0x03, 0x25, 0x27, 0xd5, 0x61, 0x7a, 0x89, 0xf6, 0xa1, 0x34,
-	0x16, 0xde, 0x50, 0x67, 0x22, 0xa7, 0x0a, 0xba, 0x28, 0x01, 0x95, 0x83, 0x3a, 0x54, 0x03, 0xdf,
-	0x0d, 0x7c, 0x1a, 0x8d, 0x19, 0x3d, 0xfb, 0xe6, 0x5b, 0xc5, 0x17, 0x15, 0x52, 0x56, 0x60, 0x6f,
-	0xcc, 0xce, 0xbe, 0xf9, 0x16, 0x3d, 0x83, 0xb2, 0xea, 0x5a, 0xfe, 0x7e, 0xea, 0x86, 0x77, 0x8a,
-	0x28, 0xaa, 0x44, 0x35, 0x32, 0x56, 0x88, 0x6c, 0x8d, 0x2b, 0x8f, 0x5d, 0x47, 0x8a, 0x1c, 0xaa,
-	0x44, 0x2f, 0xd0, 0xd7, 0xb0, 0x13, 0xc7, 0x80, 0x46, 0xc1, 0x2c, 0x1c, 0x72, 0xea, 0xfa, 0x23,
-	0xfe, 0x5e, 0x51, 0x43, 0x95, 0xa0, 0x58, 0xd6, 0x53, 0x22, 0x4b, 0x4a, 0xd0, 0x2e, 0xac, 0x8f,
-	0xb9, 0x7b, 0x3d, 0xd6, 0xd4, 0x50, 0x25, 0xf1, 0xaa, 0xfe, 0x8f, 0x3c, 0x94, 0x53, 0x81, 0x41,
-	0x15, 0x28, 0x12, 0xdc, 0xc3, 0xe4, 0x2d, 0x6e, 0x19, 0x9f, 0xa0, 0x63, 0xf8, 0xc2, 0xb2, 0x9b,
-	0x0e, 0x21, 0xb8, 0xd9, 0xa7, 0x0e, 0xa1, 0x03, 0xfb, 0x8d, 0xed, 0xfc, 0x68, 0xd3, 0x8b, 0xc6,
-	0xbb, 0x2e, 0xb6, 0xfb, 0xb4, 0x85, 0xfb, 0x0d, 0xab, 0xd3, 0x33, 0x32, 0xe8, 0x00, 0xcc, 0x85,
-	0x66, 0x22, 0x6e, 0x74, 0x9d, 0x81, 0xdd, 0x37, 0xd6, 0xd0, 0x33, 0xd8, 0x6f, 0x5b, 0x76, 0xa3,
-	0x43, 0x17, 0x3a, 0xcd, 0x4e, 0xff, 0x2d, 0xc5, 0x3f, 0x5d, 0x58, 0xe4, 0x9d, 0x91, 0x5d, 0xa5,
-	0x70, 0xde, 0xef, 0x34, 0x13, 0x0b, 0x39, 0xf4, 0x14, 0x9e, 0x68, 0x05, 0xbd, 0x85, 0xf6, 0x1d,
-	0x87, 0xf6, 0x1c, 0xc7, 0x36, 0xf2, 0x68, 0x0b, 0xaa, 0x96, 0xfd, 0xb6, 0xd1, 0xb1, 0x5a, 0x94,
-	0xe0, 0x46, 0xa7, 0x6b, 0xac, 0xa3, 0x6d, 0xd8, 0xbc, 0xaf, 0x57, 0x90, 0x26, 0x12, 0x3d, 0xc7,
-	0xb6, 0x1c, 0x9b, 0xbe, 0xc5, 0xa4, 0x67, 0x39, 0xb6, 0x51, 0x44, 0xbb, 0x80, 0x96, 0x45, 0xe7,
-	0xdd, 0x46, 0xd3, 0x28, 0xa1, 0x27, 0xb0, 0xb5, 0x8c, 0xbf, 0xc1, 0xef, 0x0c, 0x40, 0x26, 0xec,
-	0x68, 0xc7, 0xe8, 0x2b, 0xdc, 0x71, 0x7e, 0xa4, 0x5d, 0xcb, 0xb6, 0xba, 0x83, 0xae, 0x51, 0x46,
-	0x3b, 0x60, 0xb4, 0x31, 0xa6, 0x96, 0xdd, 0x1b, 0xb4, 0xdb, 0x56, 0xd3, 0xc2, 0x76, 0xdf, 0xa8,
-	0xe8, 0x93, 0x57, 0x5d, 0xbc, 0x2a, 0x37, 0x34, 0xcf, 0x1b, 0xb6, 0x8d, 0x3b, 0xb4, 0x65, 0xf5,
-	0x1a, 0xaf, 0x3a, 0xb8, 0x65, 0x6c, 0xa0, 0x43, 0x78, 0xda, 0xc7, 0xdd, 0x0b, 0x87, 0x34, 0xc8,
-	0x3b, 0x9a, 0xc8, 0xdb, 0x0d, 0xab, 0x33, 0x20, 0xd8, 0xd8, 0x44, 0x9f, 0xc1, 0x21, 0xc1, 0x3f,
-	0x0c, 0x2c, 0x82, 0x5b, 0xd4, 0x76, 0x5a, 0x98, 0xb6, 0x71, 0xa3, 0x3f, 0x20, 0x98, 0x76, 0xad,
-	0x5e, 0xcf, 0xb2, 0xbf, 0x37, 0x0c, 0xf4, 0x05, 0x1c, 0xcd, 0x55, 0xe6, 0x06, 0xee, 0x69, 0x6d,
-	0xc9, 0xfb, 0x25, 0x29, 0xb5, 0xf1, 0x4f, 0x7d, 0x7a, 0x81, 0x31, 0x31, 0x10, 0xaa, 0xc1, 0xee,
-	0xe2, 0x78, 0x7d, 0x40, 0x7c, 0xf6, 0xb6, 0x94, 0x5d, 0x60, 0xd2, 0x6d, 0xd8, 0x32, 0xc1, 0x4b,
-	0xb2, 0x1d, 0xe9, 0xf6, 0x42, 0x76, 0xdf, 0xed, 0x27, 0x08, 0xc1, 0x46, 0x2a, 0x2b, 0xed, 0x06,
-	0x31, 0x76, 0xd1, 0x0e, 0x6c, 0x26, 0x1e, 0x24, 0x8a, 0xff, 0x2e, 0xa0, 0x3d, 0x40, 0x03, 0x9b,
-	0xe0, 0x46, 0x4b, 0x06, 0x64, 0x2e, 0xf8, 0x4f, 0xe1, 0x75, 0xae, 0xb8, 0x66, 0x64, 0xeb, 0xff,
-	0xcc, 0x42, 0x75, 0xa9, 0x2f, 0xd1, 0x01, 0x94, 0x22, 0xf7, 0xda, 0x67, 0x42, 0x32, 0x87, 0x26,
-	0x95, 0x05, 0xa0, 0xde, 0xc6, 0x31, 0x73, 0x7d, 0xcd, 0x66, 0x9a, 0xcd, 0x4b, 0x0a, 0x51, 0x5c,
-	0xb6, 0x07, 0x85, 0xe4, 0x6d, 0xcd, 0xaa, 0x1e, 0x5e, 0x1f, 0xea, 0x37, 0xf5, 0x00, 0x4a, 0x92,
-	0x2e, 0x23, 0xc1, 0x26, 0x53, 0xd5, 0xde, 0x55, 0xb2, 0x00, 0xd0, 0xe7, 0x50, 0x9d, 0xf0, 0x28,
-	0x62, 0xd7, 0x9c, 0xea, 0x16, 0x05, 0xa5, 0x51, 0x89, 0xc1, 0xb6, 0xea, 0xd4, 0xcf, 0x21, 0xa1,
-	0x8c, 0x58, 0x29, 0xaf, 0x95, 0x62, 0x50, 0x2b, 0xdd, 0x67, 0x6b, 0xc1, 0x62, 0x26, 0x48, 0xb3,
-	0xb5, 0x60, 0xe8, 0x05, 0x6c, 0x69, 0xba, 0x71, 0x7d, 0x77, 0x32, 0x9b, 0x68, 0xda, 0x29, 0x28,
-	0x97, 0x37, 0x15, 0xed, 0x68, 0x5c, 0xb1, 0xcf, 0x53, 0x28, 0x5e, 0xb2, 0x88, 0xcb, 0x87, 0x22,
-	0xa6, 0x85, 0x82, 0x5c, 0xb7, 0x39, 0x97, 0x22, 0xf9, 0x7c, 0x84, 0x92, 0xf0, 0x34, 0x1b, 0x14,
-	0xae, 0x38, 0x27, 0x32, 0x8e, 0xf3, 0x13, 0xd8, 0xfb, 0xc5, 0x09, 0xe5, 0xd4, 0x09, 0x1a, 0x57,
-	0x27, 0xbc, 0x80, 0x2d, 0xfe, 0x5e, 0x84, 0x8c, 0x06, 0x53, 0xf6, 0xf3, 0x8c, 0xd3, 0x11, 0x13,
-	0xcc, 0xac, 0xa8, 0xe0, 0x6e, 0x2a, 0x81, 0xa3, 0xf0, 0x16, 0x13, 0xac, 0x7e, 0x00, 0x35, 0xc2,
-	0x23, 0x2e, 0xba, 0x6e, 0x14, 0xb9, 0x81, 0xdf, 0x0c, 0x7c, 0x11, 0x06, 0x5e, 0xfc, 0xde, 0xd4,
-	0x0f, 0x61, 0x7f, 0xa5, 0x54, 0x3f, 0x18, 0x72, 0xf3, 0x0f, 0x33, 0x1e, 0xde, 0xad, 0xde, 0x7c,
-	0x07, 0xfb, 0x2b, 0xa5, 0xf1, 0x6b, 0xf3, 0x15, 0xe4, 0xfd, 0x60, 0xc4, 0x23, 0x33, 0xa3, 0x26,
-	0x98, 0xdd, 0x14, 0xb5, 0xdb, 0xc1, 0x88, 0x9f, 0xbb, 0x91, 0x08, 0xc2, 0x3b, 0xa2, 0x95, 0xa4,
-	0xf6, 0x94, 0xb9, 0x61, 0x64, 0xae, 0x3d, 0xd0, 0xbe, 0x60, 0x6e, 0x38, 0xd7, 0x56, 0x4a, 0xf5,
-	0xbf, 0x66, 0xa0, 0x9c, 0x32, 0x22, 0x49, 0x76, 0x3a, 0xbb, 0x4c, 0x86, 0x9b, 0x0a, 0x89, 0x57,
-	0xe8, 0x39, 0x6c, 0x78, 0x2c, 0x12, 0x54, 0xf2, 0x32, 0x95, 0x29, 0x8d, 0x1f, 0xe3, 0x7b, 0x28,
-	0x3a, 0x01, 0x14, 0x88, 0x31, 0x0f, 0x69, 0x34, 0x1b, 0x0e, 0x79, 0x14, 0xd1, 0x69, 0x18, 0x5c,
-	0xaa, 0x9a, 0x5c, 0x23, 0x2b, 0x24, 0xaf, 0x73, 0xc5, 0x9c, 0x91, 0xaf, 0x7f, 0xc8, 0x40, 0x39,
-	0xe5, 0x9c, 0xac, 0x5a, 0x79, 0x19, 0x7a, 0x15, 0x06, 0x93, 0xa4, 0x17, 0xe6, 0x00, 0x32, 0xa1,
-	0xa0, 0x16, 0x22, 0x88, 0x1b, 0x21, 0x59, 0x2e, 0x57, 0x7b, 0x56, 0x39, 0x98, 0xaa, 0xf6, 0x33,
-	0xd8, 0x99, 0xb8, 0x3e, 0x9d, 0x72, 0x9f, 0x79, 0xee, 0x9f, 0x39, 0x4d, 0xa6, 0x96, 0x9c, 0x52,
-	0x5c, 0x29, 0x43, 0x75, 0xa8, 0x2c, 0xdd, 0x24, 0xaf, 0x6e, 0xb2, 0x84, 0xa1, 0x97, 0xb0, 0xa7,
-	0xa2, 0xc0, 0x84, 0xe0, 0x93, 0xa9, 0x48, 0x2e, 0x78, 0x35, 0xf3, 0x54, 0x0f, 0x14, 0xc9, 0x63,
-	0xe2, 0xfa, 0xdf, 0x33, 0xb0, 0xf5, 0x6a, 0xe6, 0x7a, 0xa3, 0xa5, 0xd9, 0xe5, 0x29, 0x14, 0xe5,
-	0xf1, 0xa9, 0xd9, 0x48, 0x0e, 0x58, 0xaa, 0x60, 0x57, 0x0d, 0xfb, 0x6b, 0x2b, 0x87, 0xfd, 0x55,
-	0x63, 0x77, 0x76, 0xe5, 0xd8, 0xfd, 0x0c, 0xca, 0xe3, 0x60, 0x4a, 0x75, 0xa2, 0x23, 0x33, 0x77,
-	0x94, 0x3d, 0xae, 0x10, 0x18, 0x07, 0xd3, 0x0b, 0x8d, 0xd4, 0x5f, 0x02, 0x4a, 0x3b, 0x19, 0x57,
-	0xe5, 0x7c, 0x7c, 0xca, 0x3c, 0x3a, 0x3e, 0xbd, 0xf8, 0x5b, 0x06, 0x2a, 0xe9, 0xc9, 0x14, 0x55,
-	0xa1, 0x64, 0xd9, 0xb4, 0xdd, 0xb1, 0xbe, 0x3f, 0xef, 0x1b, 0x9f, 0xc8, 0x65, 0x6f, 0xd0, 0x6c,
-	0x62, 0xdc, 0xc2, 0x2d, 0x23, 0x23, 0xd9, 0x55, 0x12, 0x25, 0x6e, 0xd1, 0xbe, 0xd5, 0xc5, 0xce,
-	0x40, 0xbe, 0xbb, 0xdb, 0xb0, 0x19, 0x63, 0xb6, 0x43, 0x89, 0x33, 0xe8, 0x63, 0x23, 0x8b, 0x0c,
-	0xa8, 0xc4, 0x20, 0x26, 0xc4, 0x21, 0x46, 0x4e, 0x3e, 0x16, 0x31, 0xf2, 0xf0, 0x0d, 0x4f, 0x9e,
-	0xf8, 0xfc, 0xd9, 0xbf, 0x72, 0xb0, 0xae, 0x1c, 0x0c, 0xd1, 0x39, 0x94, 0x53, 0xe3, 0x3f, 0x3a,
-	0xfc, 0xe8, 0xbf, 0x05, 0x35, 0x73, 0xf5, 0xa8, 0x3d, 0x8b, 0xbe, 0xce, 0xa0, 0xd7, 0x50, 0x49,
-	0x0f, 0xf8, 0x28, 0x3d, 0xb8, 0xad, 0x98, 0xfc, 0x3f, 0x6a, 0xeb, 0x0d, 0x18, 0x38, 0x12, 0xee,
-	0x44, 0x0e, 0x6a, 0xf1, 0xe8, 0x8c, 0x6a, 0x29, 0xfd, 0x7b, 0xf3, 0x78, 0x6d, 0x7f, 0xa5, 0x2c,
-	0xce, 0x50, 0x47, 0x5f, 0x31, 0x1e, 0x5e, 0x1f, 0x5c, 0x71, 0x79, 0x62, 0xae, 0x7d, 0xfa, 0x98,
-	0x38, 0xb6, 0x36, 0x82, 0xed, 0x15, 0x0c, 0x87, 0x7e, 0x95, 0xf6, 0xe0, 0x51, 0x7e, 0xac, 0x3d,
-	0xff, 0x7f, 0x6a, 0x8b, 0x53, 0x56, 0x50, 0xe1, 0xd2, 0x29, 0x8f, 0x13, 0xe9, 0xd2, 0x29, 0x1f,
-	0x63, 0x54, 0x0b, 0x60, 0x51, 0xd1, 0xe8, 0x20, 0xb5, 0xeb, 0x41, 0x37, 0xd6, 0x0e, 0x1f, 0x91,
-	0x6a, 0x53, 0xaf, 0x7e, 0xf3, 0x87, 0xd3, 0x6b, 0x57, 0x8c, 0x67, 0x97, 0x27, 0xc3, 0x60, 0x72,
-	0xea, 0xc9, 0x89, 0xd4, 0x77, 0xfd, 0x6b, 0x9f, 0x8b, 0x3f, 0x05, 0xe1, 0xcd, 0xa9, 0xe7, 0x8f,
-	0x4e, 0x55, 0x63, 0x9c, 0xce, 0xad, 0x5c, 0xae, 0xab, 0x1f, 0x06, 0x7e, 0xfb, 0xbf, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0xbc, 0x7f, 0xf9, 0xc1, 0x48, 0x10, 0x00, 0x00,
+	// 2248 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x58, 0xcd, 0x76, 0xdb, 0xb8,
+	0xf5, 0x1f, 0x4a, 0x94, 0x2d, 0x5d, 0x7d, 0x98, 0x86, 0x33, 0x8e, 0xfe, 0x72, 0x32, 0xa3, 0xe1,
+	0x7f, 0x26, 0xd1, 0x49, 0x33, 0x76, 0xc6, 0xed, 0x69, 0xe7, 0xb4, 0x9d, 0x69, 0x65, 0x89, 0x8e,
+	0x99, 0xc8, 0xa4, 0x06, 0x92, 0x9d, 0xa4, 0x59, 0xe0, 0xd0, 0x12, 0x64, 0xb1, 0xe6, 0x87, 0x4a,
+	0x42, 0xc9, 0x78, 0xd9, 0x5d, 0x4f, 0xb7, 0x7d, 0x88, 0xee, 0xfa, 0x04, 0xdd, 0xf6, 0x39, 0xba,
+	0xed, 0x13, 0x74, 0xdd, 0x03, 0x10, 0x94, 0x28, 0x5b, 0x4e, 0xda, 0x8d, 0x4d, 0xfc, 0xee, 0xc5,
+	0xc5, 0xbd, 0xb8, 0xbf, 0x8b, 0x0b, 0x08, 0x76, 0xa3, 0x70, 0xce, 0x68, 0x14, 0xcd, 0x46, 0x07,
+	0xc9, 0xd7, 0xfe, 0x2c, 0x0a, 0x59, 0x88, 0x4a, 0x0b, 0xbc, 0x51, 0x8a, 0x66, 0xa3, 0x04, 0xd5,
+	0xff, 0xb1, 0x01, 0x68, 0x40, 0x83, 0x71, 0xdf, 0xb9, 0xf6, 0x69, 0xc0, 0x30, 0xfd, 0xc3, 0x9c,
+	0xc6, 0x0c, 0x21, 0x50, 0xc7, 0x34, 0x66, 0x75, 0xa5, 0xa9, 0xb4, 0x2a, 0x58, 0x7c, 0x23, 0x0d,
+	0xf2, 0x8e, 0xcf, 0xea, 0xb9, 0xa6, 0xd2, 0xca, 0x63, 0xfe, 0x89, 0xfe, 0x0f, 0x8a, 0x8e, 0xcf,
+	0x88, 0x1f, 0x3b, 0xac, 0x5e, 0x11, 0xf0, 0xa6, 0xe3, 0xb3, 0xd3, 0xd8, 0x61, 0xe8, 0x0b, 0xa8,
+	0xcc, 0x12, 0x93, 0x64, 0xea, 0xc4, 0xd3, 0x7a, 0x5e, 0x18, 0x2a, 0x4b, 0xec, 0xc4, 0x89, 0xa7,
+	0xa8, 0x05, 0xda, 0xc4, 0x0d, 0x1c, 0x8f, 0x8c, 0x3c, 0xf6, 0x8e, 0x8c, 0xa9, 0xc7, 0x9c, 0xba,
+	0xda, 0x54, 0x5a, 0x05, 0x5c, 0x13, 0x78, 0xc7, 0x63, 0xef, 0xba, 0x1c, 0x45, 0x8f, 0x61, 0x2b,
+	0x35, 0x16, 0x25, 0x0e, 0xd6, 0x0b, 0x4d, 0xa5, 0x55, 0xc2, 0xb5, 0xd9, 0xaa, 0xdb, 0x8f, 0x61,
+	0x8b, 0xb9, 0x3e, 0x0d, 0xe7, 0x8c, 0xc4, 0x74, 0x14, 0x06, 0xe3, 0xb8, 0xbe, 0x91, 0x58, 0x94,
+	0xf0, 0x20, 0x41, 0x91, 0x0e, 0xd5, 0x09, 0xa5, 0xc4, 0x73, 0x7d, 0x97, 0x11, 0xee, 0xfe, 0xa6,
+	0x70, 0xbf, 0x3c, 0xa1, 0xb4, 0xc7, 0xb1, 0x81, 0xc3, 0xd0, 0x97, 0x50, 0x5b, 0xea, 0x88, 0x18,
+	0xab, 0x42, 0xa9, 0x92, 0x2a, 0x89, 0x40, 0x9f, 0x82, 0x16, 0xce, 0xd9, 0x65, 0xe8, 0x06, 0x97,
+	0x64, 0x34, 0x75, 0x02, 0xe2, 0x8e, 0xeb, 0xc5, 0xa6, 0xd2, 0x52, 0x8f, 0x72, 0xcf, 0x14, 0x5c,
+	0x4b, 0x65, 0x9d, 0xa9, 0x13, 0x98, 0x63, 0xf4, 0x08, 0xb6, 0x3c, 0x27, 0x66, 0x64, 0x1a, 0xce,
+	0xc8, 0x6c, 0x7e, 0x71, 0x45, 0xaf, 0xeb, 0x35, 0xb1, 0x33, 0x55, 0x0e, 0x9f, 0x84, 0xb3, 0xbe,
+	0x00, 0xd1, 0x43, 0x00, 0xb1, 0x2b, 0x62, 0xf1, 0x7a, 0x49, 0xc4, 0x50, 0xe2, 0x88, 0x58, 0x18,
+	0x7d, 0x03, 0x65, 0x91, 0x4d, 0x32, 0x75, 0x03, 0x16, 0xd7, 0xa1, 0x99, 0x6f, 0x95, 0x0f, 0xb5,
+	0x7d, 0x2f, 0xe0, 0x89, 0xc5, 0x5c, 0x72, 0xe2, 0x06, 0x0c, 0x43, 0x94, 0x7e, 0xc6, 0x68, 0x0c,
+	0x3b, 0x3c, 0x8b, 0x64, 0x34, 0x8f, 0x59, 0xe8, 0x93, 0x88, 0x8e, 0xc2, 0x68, 0x1c, 0xd7, 0xcb,
+	0x62, 0xea, 0xcf, 0xf6, 0x17, 0xe4, 0xd8, 0xbf, 0xcd, 0x86, 0xfd, 0x2e, 0x8d, 0x59, 0x47, 0xcc,
+	0xc3, 0xc9, 0x34, 0x23, 0x60, 0xd1, 0x35, 0xde, 0x1e, 0xdf, 0xc4, 0xd1, 0x53, 0x40, 0x8e, 0xe7,
+	0x85, 0xef, 0x49, 0x4c, 0xbd, 0x09, 0x91, 0xd9, 0xa9, 0x6f, 0x35, 0x95, 0x56, 0x11, 0x6b, 0x42,
+	0x32, 0xa0, 0xde, 0x44, 0x9a, 0x47, 0x3f, 0x87, 0xaa, 0xf0, 0x69, 0x42, 0x1d, 0x36, 0x8f, 0x68,
+	0x5c, 0xd7, 0x9a, 0xf9, 0x56, 0xed, 0x70, 0x5b, 0x06, 0x72, 0x9c, 0xc0, 0x47, 0x2e, 0xc3, 0x15,
+	0xae, 0x27, 0xc7, 0x31, 0xda, 0x83, 0x92, 0xef, 0xfc, 0x48, 0x66, 0x4e, 0xc4, 0xe2, 0xfa, 0x76,
+	0x53, 0x69, 0x55, 0x71, 0xd1, 0x77, 0x7e, 0xec, 0xf3, 0x31, 0xda, 0x87, 0x9d, 0x20, 0x24, 0x6e,
+	0x30, 0xf1, 0xdc, 0xcb, 0x29, 0x23, 0xf3, 0xd9, 0xd8, 0x61, 0x34, 0xae, 0x23, 0xe1, 0xc3, 0x76,
+	0x10, 0x9a, 0x52, 0x72, 0x96, 0x08, 0x1a, 0x5d, 0xd8, 0x5d, 0x1f, 0x1f, 0x27, 0x3c, 0x4f, 0x10,
+	0xaf, 0x01, 0x15, 0xf3, 0x4f, 0x74, 0x0f, 0x0a, 0xef, 0x1c, 0x6f, 0x4e, 0x45, 0x11, 0x54, 0x70,
+	0x32, 0xf8, 0x65, 0xee, 0x5b, 0x45, 0x9f, 0xc2, 0xce, 0x30, 0x72, 0x46, 0x57, 0x37, 0xea, 0xe8,
+	0x66, 0x19, 0x28, 0xb7, 0xcb, 0xe0, 0x0e, 0x7f, 0x73, 0x77, 0xf8, 0xab, 0x7f, 0x0f, 0x5b, 0x22,
+	0xc3, 0xc7, 0x94, 0x7e, 0xa8, 0x5a, 0xef, 0x03, 0xaf, 0x45, 0xc1, 0xed, 0xa4, 0x62, 0x37, 0x1c,
+	0x9f, 0xd3, 0x5a, 0x1f, 0x83, 0xb6, 0x9c, 0x1f, 0xcf, 0xc2, 0x20, 0xa6, 0xbc, 0x14, 0x39, 0x01,
+	0x38, 0x87, 0x39, 0xe5, 0x05, 0xd9, 0x15, 0x31, 0xab, 0x26, 0xf1, 0x63, 0x4a, 0x05, 0xdd, 0x1f,
+	0x25, 0x15, 0x46, 0xbc, 0x70, 0x74, 0xc5, 0x6b, 0xd6, 0xb9, 0x96, 0xe6, 0xab, 0x1c, 0xee, 0x85,
+	0xa3, 0xab, 0x2e, 0x07, 0xf5, 0xb7, 0xc9, 0xb1, 0x32, 0x0c, 0xc5, 0x5a, 0xff, 0xc3, 0x76, 0xe8,
+	0x50, 0x10, 0x5c, 0x14, 0x66, 0xcb, 0x87, 0x95, 0x2c, 0xa9, 0x71, 0x22, 0xd2, 0xdf, 0xc2, 0xce,
+	0x8a, 0x71, 0x19, 0x45, 0x03, 0x8a, 0xb3, 0x88, 0xba, 0xbe, 0x73, 0x49, 0xa5, 0xe5, 0xc5, 0x18,
+	0xb5, 0x60, 0x73, 0xe2, 0xb8, 0xde, 0x3c, 0x4a, 0x0d, 0xd7, 0x52, 0x92, 0x25, 0x28, 0x4e, 0xc5,
+	0xfa, 0x03, 0x68, 0x60, 0x1a, 0x53, 0x76, 0xea, 0xc6, 0xb1, 0x1b, 0x06, 0x9d, 0x30, 0x60, 0x51,
+	0xe8, 0xc9, 0x08, 0xf4, 0x87, 0xb0, 0xb7, 0x56, 0x9a, 0xb8, 0xc0, 0x27, 0xff, 0x30, 0xa7, 0xd1,
+	0xf5, 0xfa, 0xc9, 0x3f, 0xc0, 0xde, 0x5a, 0xa9, 0xf4, 0xff, 0x29, 0x14, 0x66, 0x8e, 0x1b, 0xf1,
+	0xdc, 0xf3, 0xa2, 0xdc, 0xcd, 0x14, 0x65, 0xdf, 0x71, 0xa3, 0x13, 0x37, 0x66, 0x61, 0x74, 0x8d,
+	0x13, 0xa5, 0x17, 0x6a, 0x51, 0xd1, 0x72, 0xfa, 0x9f, 0x15, 0x28, 0x67, 0x84, 0xbc, 0x34, 0x82,
+	0x70, 0x4c, 0xc9, 0x24, 0x0a, 0xfd, 0x74, 0x13, 0x38, 0x70, 0x1c, 0x85, 0x3e, 0xe7, 0x84, 0x10,
+	0xb2, 0x50, 0x12, 0x78, 0x83, 0x0f, 0x87, 0x21, 0xfa, 0x1a, 0x36, 0xa7, 0x89, 0x01, 0x71, 0x10,
+	0x96, 0x0f, 0x77, 0x6e, 0xac, 0xdd, 0x75, 0x98, 0x83, 0x53, 0x9d, 0x17, 0x6a, 0x31, 0xaf, 0xa9,
+	0x2f, 0xd4, 0xa2, 0xaa, 0x15, 0x5e, 0xa8, 0xc5, 0x82, 0xb6, 0xf1, 0x42, 0x2d, 0x6e, 0x68, 0x9b,
+	0xfa, 0xbf, 0x14, 0x28, 0xa6, 0xda, 0xdc, 0x13, 0xbe, 0xa5, 0x84, 0xf3, 0x42, 0x92, 0xa9, 0xc8,
+	0x81, 0xa1, 0xeb, 0x53, 0xd4, 0x84, 0x8a, 0x10, 0xae, 0x52, 0x14, 0x38, 0xd6, 0x16, 0x34, 0x15,
+	0x27, 0x74, 0xaa, 0x21, 0xf8, 0xa8, 0xca, 0x13, 0x3a, 0x51, 0x49, 0x9b, 0x4c, 0x3c, 0x1f, 0x8d,
+	0x68, 0x1c, 0x27, 0xab, 0x14, 0x12, 0x15, 0x89, 0x89, 0x85, 0x1e, 0xc1, 0x56, 0xaa, 0x92, 0xae,
+	0xb5, 0x91, 0xf0, 0x55, 0xc2, 0x72, 0xb9, 0x16, 0x68, 0x59, 0x3d, 0x7f, 0xd9, 0x13, 0x6a, 0x4b,
+	0x45, 0xbe, 0x68, 0x12, 0xbc, 0xfe, 0x7b, 0xb8, 0x2f, 0x52, 0xd9, 0x8f, 0xc2, 0x0b, 0xe7, 0xc2,
+	0xf5, 0x5c, 0x76, 0x9d, 0x92, 0x9c, 0x07, 0x1e, 0x85, 0x3e, 0xe1, 0x7b, 0x9b, 0xa6, 0x80, 0x03,
+	0x56, 0x38, 0xa6, 0x3c, 0x05, 0x2c, 0x4c, 0x44, 0x32, 0x05, 0x2c, 0x14, 0x82, 0x6c, 0x2f, 0xcd,
+	0xaf, 0xf4, 0x52, 0xfd, 0x0a, 0xea, 0xb7, 0xd7, 0x92, 0x9c, 0x69, 0x42, 0x79, 0xb6, 0x84, 0xc5,
+	0x72, 0x0a, 0xce, 0x42, 0xd9, 0xdc, 0xe6, 0x3e, 0x9e, 0x5b, 0xfd, 0xaf, 0x0a, 0x6c, 0x1f, 0xcd,
+	0x5d, 0x6f, 0xbc, 0x52, 0xb8, 0x59, 0xef, 0x94, 0xd5, 0x4e, 0xbf, 0xae, 0x8d, 0xe7, 0xd6, 0xb6,
+	0xf1, 0x75, 0xad, 0x32, 0x7f, 0x67, 0xab, 0xfc, 0x1c, 0xca, 0xcb, 0x2e, 0x19, 0xd7, 0xd5, 0x66,
+	0xbe, 0x55, 0xc1, 0x30, 0x4d, 0x5b, 0x64, 0xac, 0x7f, 0x0b, 0x28, 0xeb, 0xa8, 0xdc, 0x90, 0xc5,
+	0xf9, 0xa1, 0xdc, 0x7d, 0x7e, 0x3c, 0x80, 0xc6, 0x60, 0x7e, 0x11, 0x8f, 0x22, 0xf7, 0x82, 0x9e,
+	0x30, 0x6f, 0x64, 0xbc, 0xa3, 0x01, 0x8b, 0xd3, 0x2a, 0xfd, 0xb7, 0x0a, 0xa5, 0x05, 0xca, 0x8f,
+	0x67, 0x37, 0x18, 0x85, 0x7e, 0xea, 0x74, 0x40, 0x3d, 0xee, 0x77, 0xd2, 0x14, 0xb6, 0x53, 0x51,
+	0x27, 0x91, 0x98, 0x63, 0xae, 0xbf, 0x12, 0xa4, 0xd4, 0xcf, 0x25, 0xfa, 0xd9, 0x18, 0x13, 0xfd,
+	0x16, 0x68, 0x0b, 0xfb, 0x53, 0xe6, 0x8d, 0x16, 0x9b, 0x82, 0x6b, 0x29, 0xce, 0x9d, 0x49, 0x34,
+	0x17, 0x96, 0x53, 0x4d, 0x35, 0xd1, 0x4c, 0x71, 0xa9, 0xf9, 0x05, 0x54, 0x78, 0x3d, 0xc4, 0xcc,
+	0xf1, 0x67, 0x24, 0x88, 0x45, 0x5d, 0xa8, 0xb8, 0xbc, 0xc0, 0xac, 0x18, 0x7d, 0x07, 0x40, 0x79,
+	0x7c, 0x84, 0x5d, 0xcf, 0xa8, 0x28, 0x89, 0xda, 0xe1, 0x67, 0x19, 0x62, 0x2c, 0x36, 0x60, 0x5f,
+	0xfc, 0x1d, 0x5e, 0xcf, 0x28, 0x2e, 0xd1, 0xf4, 0x13, 0x7d, 0x0f, 0xd5, 0x49, 0x18, 0xbd, 0x77,
+	0xa2, 0x31, 0x11, 0xa0, 0x3c, 0x36, 0xee, 0x67, 0x2c, 0x1c, 0x27, 0x72, 0x31, 0xfd, 0xe4, 0x13,
+	0x5c, 0x99, 0x64, 0xc6, 0xe8, 0x25, 0xa0, 0x74, 0xbe, 0xa8, 0xf2, 0xc4, 0x48, 0x51, 0x18, 0xd9,
+	0xbb, 0x6d, 0x84, 0x1f, 0xd2, 0xa9, 0x21, 0x6d, 0x72, 0x03, 0x43, 0xbf, 0x82, 0x4a, 0x4c, 0x19,
+	0xf3, 0xa8, 0x34, 0x53, 0x12, 0x66, 0x76, 0x57, 0xee, 0x34, 0x5c, 0x9c, 0x5a, 0x28, 0xc7, 0xcb,
+	0x21, 0x3a, 0x82, 0x2d, 0xcf, 0x0d, 0xae, 0xb2, 0x6e, 0x80, 0x98, 0x5f, 0xcf, 0xcc, 0xef, 0xb9,
+	0xc1, 0x55, 0xd6, 0x87, 0xaa, 0x97, 0x05, 0xf4, 0x5f, 0x43, 0x69, 0xb1, 0x4b, 0xa8, 0x0c, 0x9b,
+	0x67, 0xd6, 0x4b, 0xcb, 0x7e, 0x65, 0x69, 0x9f, 0xa0, 0x22, 0xa8, 0x03, 0xc3, 0xea, 0x6a, 0x0a,
+	0x87, 0xb1, 0xd1, 0x31, 0xcc, 0x73, 0x43, 0xcb, 0xf1, 0xc1, 0xb1, 0x8d, 0x5f, 0xb5, 0x71, 0x57,
+	0xcb, 0x1f, 0x6d, 0x42, 0x41, 0xac, 0xab, 0xff, 0x5d, 0x81, 0xa2, 0xc8, 0x60, 0x30, 0x09, 0xd1,
+	0x4f, 0x60, 0x41, 0x2e, 0x71, 0xb8, 0xf1, 0x86, 0x2b, 0x58, 0x57, 0xc5, 0x0b, 0xc2, 0x0c, 0x25,
+	0xce, 0x95, 0x17, 0xd4, 0x58, 0x28, 0xe7, 0x12, 0xe5, 0x54, 0xb0, 0x50, 0x7e, 0x92, 0xb1, 0xbc,
+	0x72, 0xe4, 0xa8, 0x78, 0x2b, 0x15, 0xa4, 0x27, 0xec, 0x93, 0x8c, 0xe1, 0x95, 0x93, 0x58, 0xc5,
+	0x5b, 0xa9, 0x40, 0xea, 0xea, 0xbf, 0x80, 0x4a, 0x36, 0xe7, 0xe8, 0x31, 0xa8, 0x6e, 0x30, 0x09,
+	0x65, 0x21, 0xee, 0xdc, 0x20, 0x17, 0x0f, 0x12, 0x0b, 0x05, 0x1d, 0x81, 0x76, 0x33, 0xcf, 0x7a,
+	0x15, 0xca, 0x99, 0xa4, 0xe9, 0xff, 0x54, 0xa0, 0xba, 0x92, 0x84, 0xff, 0xda, 0x3a, 0xfa, 0x0e,
+	0x2a, 0xef, 0xdd, 0x88, 0x92, 0x6c, 0xfb, 0xaf, 0x1d, 0x36, 0x56, 0xdb, 0x7f, 0xfa, 0xbf, 0x13,
+	0x8e, 0x29, 0x2e, 0x73, 0x7d, 0x09, 0xa0, 0xdf, 0x40, 0x4d, 0xce, 0x24, 0x63, 0xca, 0x1c, 0xd7,
+	0x13, 0x5b, 0x55, 0x5b, 0xa1, 0x87, 0xd4, 0xed, 0x0a, 0x39, 0xae, 0x4e, 0xb2, 0x43, 0xf4, 0xd5,
+	0xd2, 0x40, 0xcc, 0x22, 0x37, 0xb8, 0x14, 0xfb, 0x57, 0x5a, 0xa8, 0x0d, 0x04, 0xc8, 0x1b, 0x79,
+	0x55, 0x5e, 0x1e, 0x07, 0xcc, 0x61, 0xf3, 0x18, 0x7d, 0x0d, 0x85, 0x98, 0x39, 0xf2, 0x24, 0xab,
+	0xad, 0xd4, 0x56, 0x46, 0x91, 0xe2, 0x44, 0x6b, 0xe5, 0xf6, 0x93, 0xbb, 0x75, 0xfb, 0x29, 0xf0,
+	0x13, 0x23, 0x39, 0x45, 0xcb, 0x87, 0x48, 0x06, 0x7f, 0x32, 0xec, 0x75, 0xda, 0x8c, 0x51, 0x7f,
+	0xc6, 0x70, 0xa2, 0x90, 0x74, 0xb7, 0x27, 0x7f, 0x54, 0xa1, 0xba, 0x12, 0xd4, 0x2a, 0xab, 0xab,
+	0x50, 0xb2, 0x6c, 0xd2, 0x35, 0x86, 0x6d, 0xb3, 0xa7, 0x29, 0x48, 0x83, 0x8a, 0x6d, 0x99, 0xb6,
+	0x45, 0xba, 0x46, 0xc7, 0xee, 0x72, 0x7e, 0x7f, 0x0a, 0xdb, 0x3d, 0xd3, 0x7a, 0x49, 0x2c, 0x7b,
+	0x48, 0x8c, 0x9e, 0xf9, 0xdc, 0x3c, 0xea, 0x19, 0x5a, 0x1e, 0xdd, 0x03, 0xcd, 0xb6, 0x48, 0xe7,
+	0xa4, 0x6d, 0x5a, 0x64, 0x68, 0x9e, 0x1a, 0xf6, 0xd9, 0x50, 0x53, 0x39, 0xca, 0x1d, 0x21, 0xc6,
+	0xeb, 0x8e, 0x61, 0x74, 0x07, 0xe4, 0xb4, 0xfd, 0x5a, 0x2b, 0xa0, 0x3a, 0xdc, 0x33, 0xad, 0xc1,
+	0xd9, 0xf1, 0xb1, 0xd9, 0x31, 0x0d, 0x6b, 0x48, 0x8e, 0xda, 0xbd, 0xb6, 0xd5, 0x31, 0xb4, 0x0d,
+	0xb4, 0x0b, 0xc8, 0xb4, 0x3a, 0xf6, 0x69, 0xbf, 0x67, 0x0c, 0x0d, 0x92, 0xd6, 0xd1, 0x26, 0xda,
+	0x81, 0x2d, 0x61, 0xa7, 0xdd, 0xed, 0x92, 0xe3, 0xb6, 0xd9, 0x33, 0xba, 0x5a, 0x91, 0x7b, 0x22,
+	0x35, 0x06, 0xa4, 0x6b, 0x0e, 0xda, 0x47, 0x1c, 0x2e, 0xf1, 0x35, 0x4d, 0xeb, 0xdc, 0x36, 0x3b,
+	0x06, 0xe9, 0x70, 0xb3, 0x1c, 0x05, 0xae, 0x9c, 0xa2, 0x67, 0x56, 0xd7, 0xc0, 0xfd, 0xb6, 0xd9,
+	0xd5, 0xca, 0x68, 0x0f, 0xee, 0xa7, 0xb0, 0xf1, 0xba, 0x6f, 0xe2, 0x37, 0x64, 0x68, 0xdb, 0x64,
+	0x60, 0xdb, 0x96, 0x56, 0xc9, 0x5a, 0xe2, 0xd1, 0xda, 0x7d, 0xc3, 0xd2, 0xaa, 0xe8, 0x3e, 0xec,
+	0x9c, 0xf6, 0xfb, 0x24, 0x95, 0xa4, 0xc1, 0xd6, 0xb8, 0x7a, 0xbb, 0xdb, 0xc5, 0xc6, 0x60, 0x40,
+	0x4e, 0xcd, 0xc1, 0x69, 0x7b, 0xd8, 0x39, 0xd1, 0xb6, 0x78, 0x48, 0x03, 0x63, 0x48, 0x86, 0xf6,
+	0xb0, 0xdd, 0x5b, 0xe2, 0x1a, 0x77, 0x68, 0x89, 0xf3, 0x45, 0x7b, 0xf6, 0x2b, 0x6d, 0x9b, 0x6f,
+	0x38, 0x87, 0xed, 0x73, 0xe9, 0x22, 0xe2, 0xb1, 0xcb, 0xf4, 0xa4, 0x6b, 0x6a, 0x3b, 0x1c, 0x34,
+	0xad, 0xf3, 0x76, 0xcf, 0xec, 0x92, 0x97, 0xc6, 0x1b, 0x71, 0x0e, 0xdd, 0xe3, 0x60, 0xe2, 0x19,
+	0xe9, 0x63, 0xfb, 0x39, 0x77, 0x44, 0xfb, 0x14, 0x21, 0xa8, 0x75, 0x4c, 0xdc, 0x39, 0xeb, 0xb5,
+	0x31, 0xc1, 0xf6, 0xd9, 0xd0, 0xd0, 0x76, 0x9f, 0xfc, 0x4d, 0x81, 0x4a, 0x96, 0x67, 0x3c, 0xeb,
+	0xa6, 0x45, 0x8e, 0x7b, 0xe6, 0xf3, 0x93, 0x61, 0x42, 0x82, 0xc1, 0x59, 0x87, 0xa7, 0xcc, 0xe0,
+	0xe7, 0x1b, 0x82, 0x5a, 0xb2, 0xe9, 0x8b, 0x60, 0x73, 0x7c, 0x2d, 0x89, 0x59, 0xb6, 0xb4, 0x9b,
+	0xe7, 0xce, 0x4b, 0xd0, 0xc0, 0xd8, 0xc6, 0x9a, 0x8a, 0xbe, 0x84, 0xa6, 0x44, 0x78, 0x5e, 0x31,
+	0x36, 0x3a, 0x43, 0xd2, 0x6f, 0xbf, 0x39, 0xe5, 0x69, 0x4f, 0x48, 0x36, 0xd0, 0x0a, 0xe8, 0x73,
+	0xd8, 0x5b, 0x68, 0xad, 0xe3, 0xc5, 0xe1, 0x5f, 0x36, 0x61, 0x43, 0xb4, 0xf9, 0x08, 0xfd, 0x16,
+	0xaa, 0x99, 0x67, 0xec, 0xf9, 0x21, 0x7a, 0xf8, 0xc1, 0x07, 0x6e, 0x23, 0x7d, 0x0c, 0x48, 0xf8,
+	0x99, 0x82, 0x8e, 0xa0, 0x96, 0x7d, 0xcf, 0x9d, 0x1f, 0xa2, 0x6c, 0x77, 0x5c, 0xf3, 0xd4, 0x5b,
+	0x63, 0xe3, 0x25, 0x68, 0x46, 0xcc, 0x5c, 0x9f, 0x17, 0xa9, 0x7c, 0x71, 0xa1, 0x46, 0xc6, 0xca,
+	0x8d, 0x67, 0x5c, 0x63, 0x6f, 0xad, 0x4c, 0xde, 0x6b, 0x7a, 0xfc, 0x40, 0x5c, 0xbc, 0x79, 0x6e,
+	0x05, 0xb4, 0xfa, 0xd0, 0x6a, 0x7c, 0x76, 0x97, 0x58, 0x5a, 0x1b, 0xc3, 0xce, 0x9a, 0x67, 0x0c,
+	0xfa, 0x2a, 0xeb, 0xc1, 0x9d, 0x8f, 0xa0, 0xc6, 0xa3, 0x8f, 0xa9, 0x2d, 0x57, 0x59, 0xf3, 0xde,
+	0x59, 0x59, 0xe5, 0xee, 0xd7, 0xd2, 0xca, 0x2a, 0x1f, 0x7a, 0x36, 0xbd, 0x05, 0xed, 0xe6, 0xf5,
+	0x18, 0xe9, 0x37, 0xe7, 0xde, 0xbe, 0xa7, 0x37, 0xfe, 0xff, 0x83, 0x3a, 0xd2, 0xb8, 0x09, 0xb0,
+	0xbc, 0x64, 0xa2, 0x07, 0x99, 0x29, 0xb7, 0x2e, 0xc9, 0x8d, 0x87, 0x77, 0x48, 0xa5, 0xa9, 0x21,
+	0xec, 0xac, 0xb9, 0x75, 0xae, 0xec, 0xc6, 0xdd, 0xb7, 0xd2, 0xc6, 0xbd, 0x75, 0x97, 0xb3, 0x67,
+	0x0a, 0x3a, 0x4d, 0x78, 0x91, 0xfe, 0xa4, 0xf2, 0x11, 0xa2, 0xd7, 0xd7, 0x37, 0x91, 0x79, 0xac,
+	0xe7, 0xff, 0x94, 0x53, 0x9e, 0x29, 0xc8, 0x86, 0x4a, 0x96, 0xdc, 0x1f, 0x65, 0xfd, 0xc7, 0x0c,
+	0x1e, 0x7d, 0xf3, 0xbb, 0x83, 0x4b, 0x97, 0x4d, 0xe7, 0x17, 0xfb, 0xa3, 0xd0, 0x3f, 0x10, 0xbf,
+	0x64, 0x04, 0x6e, 0x70, 0x19, 0x50, 0xf6, 0x3e, 0x8c, 0xae, 0x0e, 0xbc, 0x60, 0x7c, 0x20, 0xea,
+	0xe6, 0x60, 0x61, 0xe7, 0x62, 0x43, 0xfc, 0x34, 0xf9, 0xd3, 0xff, 0x04, 0x00, 0x00, 0xff, 0xff,
+	0x16, 0x00, 0xbc, 0x19, 0xca, 0x14, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1476,14 +1903,14 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type RouterClient interface {
 	//*
-	//SendPayment attempts to route a payment described by the passed
+	//SendPaymentV2 attempts to route a payment described by the passed
 	//PaymentRequest to the final destination. The call returns a stream of
-	//payment status updates.
-	SendPayment(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (Router_SendPaymentClient, error)
+	//payment updates.
+	SendPaymentV2(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (Router_SendPaymentV2Client, error)
 	//*
-	//TrackPayment returns an update stream for the payment identified by the
+	//TrackPaymentV2 returns an update stream for the payment identified by the
 	//payment hash.
-	TrackPayment(ctx context.Context, in *TrackPaymentRequest, opts ...grpc.CallOption) (Router_TrackPaymentClient, error)
+	TrackPaymentV2(ctx context.Context, in *TrackPaymentRequest, opts ...grpc.CallOption) (Router_TrackPaymentV2Client, error)
 	//*
 	//EstimateRouteFee allows callers to obtain a lower bound w.r.t how much it
 	//may cost to send an HTLC to the target end destination.
@@ -1502,10 +1929,27 @@ type RouterClient interface {
 	//It is a development feature.
 	QueryMissionControl(ctx context.Context, in *QueryMissionControlRequest, opts ...grpc.CallOption) (*QueryMissionControlResponse, error)
 	//*
+	//QueryProbability returns the current success probability estimate for a
+	//given node pair and amount.
+	QueryProbability(ctx context.Context, in *QueryProbabilityRequest, opts ...grpc.CallOption) (*QueryProbabilityResponse, error)
+	//*
 	//BuildRoute builds a fully specified route based on a list of hop public
 	//keys. It retrieves the relevant channel policies from the graph in order to
 	//calculate the correct fees and time locks.
 	BuildRoute(ctx context.Context, in *BuildRouteRequest, opts ...grpc.CallOption) (*BuildRouteResponse, error)
+	//*
+	//SubscribeHtlcEvents creates a uni-directional stream from the server to
+	//the client which delivers a stream of htlc events.
+	SubscribeHtlcEvents(ctx context.Context, in *SubscribeHtlcEventsRequest, opts ...grpc.CallOption) (Router_SubscribeHtlcEventsClient, error)
+	//*
+	//Deprecated, use SendPaymentV2. SendPayment attempts to route a payment
+	//described by the passed PaymentRequest to the final destination. The call
+	//returns a stream of payment status updates.
+	SendPayment(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (Router_SendPaymentClient, error)
+	//*
+	//Deprecated, use TrackPaymentV2. TrackPayment returns an update stream for
+	//the payment identified by the payment hash.
+	TrackPayment(ctx context.Context, in *TrackPaymentRequest, opts ...grpc.CallOption) (Router_TrackPaymentClient, error)
 }
 
 type routerClient struct {
@@ -1516,12 +1960,12 @@ func NewRouterClient(cc *grpc.ClientConn) RouterClient {
 	return &routerClient{cc}
 }
 
-func (c *routerClient) SendPayment(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (Router_SendPaymentClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Router_serviceDesc.Streams[0], "/routerrpc.Router/SendPayment", opts...)
+func (c *routerClient) SendPaymentV2(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (Router_SendPaymentV2Client, error) {
+	stream, err := c.cc.NewStream(ctx, &_Router_serviceDesc.Streams[0], "/routerrpc.Router/SendPaymentV2", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &routerSendPaymentClient{stream}
+	x := &routerSendPaymentV2Client{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -1531,29 +1975,29 @@ func (c *routerClient) SendPayment(ctx context.Context, in *SendPaymentRequest, 
 	return x, nil
 }
 
-type Router_SendPaymentClient interface {
-	Recv() (*PaymentStatus, error)
+type Router_SendPaymentV2Client interface {
+	Recv() (*lnrpc.Payment, error)
 	grpc.ClientStream
 }
 
-type routerSendPaymentClient struct {
+type routerSendPaymentV2Client struct {
 	grpc.ClientStream
 }
 
-func (x *routerSendPaymentClient) Recv() (*PaymentStatus, error) {
-	m := new(PaymentStatus)
+func (x *routerSendPaymentV2Client) Recv() (*lnrpc.Payment, error) {
+	m := new(lnrpc.Payment)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *routerClient) TrackPayment(ctx context.Context, in *TrackPaymentRequest, opts ...grpc.CallOption) (Router_TrackPaymentClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Router_serviceDesc.Streams[1], "/routerrpc.Router/TrackPayment", opts...)
+func (c *routerClient) TrackPaymentV2(ctx context.Context, in *TrackPaymentRequest, opts ...grpc.CallOption) (Router_TrackPaymentV2Client, error) {
+	stream, err := c.cc.NewStream(ctx, &_Router_serviceDesc.Streams[1], "/routerrpc.Router/TrackPaymentV2", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &routerTrackPaymentClient{stream}
+	x := &routerTrackPaymentV2Client{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -1563,17 +2007,17 @@ func (c *routerClient) TrackPayment(ctx context.Context, in *TrackPaymentRequest
 	return x, nil
 }
 
-type Router_TrackPaymentClient interface {
-	Recv() (*PaymentStatus, error)
+type Router_TrackPaymentV2Client interface {
+	Recv() (*lnrpc.Payment, error)
 	grpc.ClientStream
 }
 
-type routerTrackPaymentClient struct {
+type routerTrackPaymentV2Client struct {
 	grpc.ClientStream
 }
 
-func (x *routerTrackPaymentClient) Recv() (*PaymentStatus, error) {
-	m := new(PaymentStatus)
+func (x *routerTrackPaymentV2Client) Recv() (*lnrpc.Payment, error) {
+	m := new(lnrpc.Payment)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -1616,6 +2060,15 @@ func (c *routerClient) QueryMissionControl(ctx context.Context, in *QueryMission
 	return out, nil
 }
 
+func (c *routerClient) QueryProbability(ctx context.Context, in *QueryProbabilityRequest, opts ...grpc.CallOption) (*QueryProbabilityResponse, error) {
+	out := new(QueryProbabilityResponse)
+	err := c.cc.Invoke(ctx, "/routerrpc.Router/QueryProbability", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *routerClient) BuildRoute(ctx context.Context, in *BuildRouteRequest, opts ...grpc.CallOption) (*BuildRouteResponse, error) {
 	out := new(BuildRouteResponse)
 	err := c.cc.Invoke(ctx, "/routerrpc.Router/BuildRoute", in, out, opts...)
@@ -1625,17 +2078,115 @@ func (c *routerClient) BuildRoute(ctx context.Context, in *BuildRouteRequest, op
 	return out, nil
 }
 
+func (c *routerClient) SubscribeHtlcEvents(ctx context.Context, in *SubscribeHtlcEventsRequest, opts ...grpc.CallOption) (Router_SubscribeHtlcEventsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Router_serviceDesc.Streams[2], "/routerrpc.Router/SubscribeHtlcEvents", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &routerSubscribeHtlcEventsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Router_SubscribeHtlcEventsClient interface {
+	Recv() (*HtlcEvent, error)
+	grpc.ClientStream
+}
+
+type routerSubscribeHtlcEventsClient struct {
+	grpc.ClientStream
+}
+
+func (x *routerSubscribeHtlcEventsClient) Recv() (*HtlcEvent, error) {
+	m := new(HtlcEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// Deprecated: Do not use.
+func (c *routerClient) SendPayment(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (Router_SendPaymentClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Router_serviceDesc.Streams[3], "/routerrpc.Router/SendPayment", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &routerSendPaymentClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Router_SendPaymentClient interface {
+	Recv() (*PaymentStatus, error)
+	grpc.ClientStream
+}
+
+type routerSendPaymentClient struct {
+	grpc.ClientStream
+}
+
+func (x *routerSendPaymentClient) Recv() (*PaymentStatus, error) {
+	m := new(PaymentStatus)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// Deprecated: Do not use.
+func (c *routerClient) TrackPayment(ctx context.Context, in *TrackPaymentRequest, opts ...grpc.CallOption) (Router_TrackPaymentClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Router_serviceDesc.Streams[4], "/routerrpc.Router/TrackPayment", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &routerTrackPaymentClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Router_TrackPaymentClient interface {
+	Recv() (*PaymentStatus, error)
+	grpc.ClientStream
+}
+
+type routerTrackPaymentClient struct {
+	grpc.ClientStream
+}
+
+func (x *routerTrackPaymentClient) Recv() (*PaymentStatus, error) {
+	m := new(PaymentStatus)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // RouterServer is the server API for Router service.
 type RouterServer interface {
 	//*
-	//SendPayment attempts to route a payment described by the passed
+	//SendPaymentV2 attempts to route a payment described by the passed
 	//PaymentRequest to the final destination. The call returns a stream of
-	//payment status updates.
-	SendPayment(*SendPaymentRequest, Router_SendPaymentServer) error
+	//payment updates.
+	SendPaymentV2(*SendPaymentRequest, Router_SendPaymentV2Server) error
 	//*
-	//TrackPayment returns an update stream for the payment identified by the
+	//TrackPaymentV2 returns an update stream for the payment identified by the
 	//payment hash.
-	TrackPayment(*TrackPaymentRequest, Router_TrackPaymentServer) error
+	TrackPaymentV2(*TrackPaymentRequest, Router_TrackPaymentV2Server) error
 	//*
 	//EstimateRouteFee allows callers to obtain a lower bound w.r.t how much it
 	//may cost to send an HTLC to the target end destination.
@@ -1654,55 +2205,72 @@ type RouterServer interface {
 	//It is a development feature.
 	QueryMissionControl(context.Context, *QueryMissionControlRequest) (*QueryMissionControlResponse, error)
 	//*
+	//QueryProbability returns the current success probability estimate for a
+	//given node pair and amount.
+	QueryProbability(context.Context, *QueryProbabilityRequest) (*QueryProbabilityResponse, error)
+	//*
 	//BuildRoute builds a fully specified route based on a list of hop public
 	//keys. It retrieves the relevant channel policies from the graph in order to
 	//calculate the correct fees and time locks.
 	BuildRoute(context.Context, *BuildRouteRequest) (*BuildRouteResponse, error)
+	//*
+	//SubscribeHtlcEvents creates a uni-directional stream from the server to
+	//the client which delivers a stream of htlc events.
+	SubscribeHtlcEvents(*SubscribeHtlcEventsRequest, Router_SubscribeHtlcEventsServer) error
+	//*
+	//Deprecated, use SendPaymentV2. SendPayment attempts to route a payment
+	//described by the passed PaymentRequest to the final destination. The call
+	//returns a stream of payment status updates.
+	SendPayment(*SendPaymentRequest, Router_SendPaymentServer) error
+	//*
+	//Deprecated, use TrackPaymentV2. TrackPayment returns an update stream for
+	//the payment identified by the payment hash.
+	TrackPayment(*TrackPaymentRequest, Router_TrackPaymentServer) error
 }
 
 func RegisterRouterServer(s *grpc.Server, srv RouterServer) {
 	s.RegisterService(&_Router_serviceDesc, srv)
 }
 
-func _Router_SendPayment_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Router_SendPaymentV2_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SendPaymentRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(RouterServer).SendPayment(m, &routerSendPaymentServer{stream})
+	return srv.(RouterServer).SendPaymentV2(m, &routerSendPaymentV2Server{stream})
 }
 
-type Router_SendPaymentServer interface {
-	Send(*PaymentStatus) error
+type Router_SendPaymentV2Server interface {
+	Send(*lnrpc.Payment) error
 	grpc.ServerStream
 }
 
-type routerSendPaymentServer struct {
+type routerSendPaymentV2Server struct {
 	grpc.ServerStream
 }
 
-func (x *routerSendPaymentServer) Send(m *PaymentStatus) error {
+func (x *routerSendPaymentV2Server) Send(m *lnrpc.Payment) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Router_TrackPayment_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Router_TrackPaymentV2_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(TrackPaymentRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(RouterServer).TrackPayment(m, &routerTrackPaymentServer{stream})
+	return srv.(RouterServer).TrackPaymentV2(m, &routerTrackPaymentV2Server{stream})
 }
 
-type Router_TrackPaymentServer interface {
-	Send(*PaymentStatus) error
+type Router_TrackPaymentV2Server interface {
+	Send(*lnrpc.Payment) error
 	grpc.ServerStream
 }
 
-type routerTrackPaymentServer struct {
+type routerTrackPaymentV2Server struct {
 	grpc.ServerStream
 }
 
-func (x *routerTrackPaymentServer) Send(m *PaymentStatus) error {
+func (x *routerTrackPaymentV2Server) Send(m *lnrpc.Payment) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1778,6 +2346,24 @@ func _Router_QueryMissionControl_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Router_QueryProbability_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryProbabilityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouterServer).QueryProbability(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/routerrpc.Router/QueryProbability",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouterServer).QueryProbability(ctx, req.(*QueryProbabilityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Router_BuildRoute_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BuildRouteRequest)
 	if err := dec(in); err != nil {
@@ -1794,6 +2380,69 @@ func _Router_BuildRoute_Handler(srv interface{}, ctx context.Context, dec func(i
 		return srv.(RouterServer).BuildRoute(ctx, req.(*BuildRouteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _Router_SubscribeHtlcEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscribeHtlcEventsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RouterServer).SubscribeHtlcEvents(m, &routerSubscribeHtlcEventsServer{stream})
+}
+
+type Router_SubscribeHtlcEventsServer interface {
+	Send(*HtlcEvent) error
+	grpc.ServerStream
+}
+
+type routerSubscribeHtlcEventsServer struct {
+	grpc.ServerStream
+}
+
+func (x *routerSubscribeHtlcEventsServer) Send(m *HtlcEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Router_SendPayment_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SendPaymentRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RouterServer).SendPayment(m, &routerSendPaymentServer{stream})
+}
+
+type Router_SendPaymentServer interface {
+	Send(*PaymentStatus) error
+	grpc.ServerStream
+}
+
+type routerSendPaymentServer struct {
+	grpc.ServerStream
+}
+
+func (x *routerSendPaymentServer) Send(m *PaymentStatus) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Router_TrackPayment_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TrackPaymentRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RouterServer).TrackPayment(m, &routerTrackPaymentServer{stream})
+}
+
+type Router_TrackPaymentServer interface {
+	Send(*PaymentStatus) error
+	grpc.ServerStream
+}
+
+type routerTrackPaymentServer struct {
+	grpc.ServerStream
+}
+
+func (x *routerTrackPaymentServer) Send(m *PaymentStatus) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 var _Router_serviceDesc = grpc.ServiceDesc{
@@ -1817,11 +2466,30 @@ var _Router_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Router_QueryMissionControl_Handler,
 		},
 		{
+			MethodName: "QueryProbability",
+			Handler:    _Router_QueryProbability_Handler,
+		},
+		{
 			MethodName: "BuildRoute",
 			Handler:    _Router_BuildRoute_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SendPaymentV2",
+			Handler:       _Router_SendPaymentV2_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "TrackPaymentV2",
+			Handler:       _Router_TrackPaymentV2_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeHtlcEvents",
+			Handler:       _Router_SubscribeHtlcEvents_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "SendPayment",
 			Handler:       _Router_SendPayment_Handler,

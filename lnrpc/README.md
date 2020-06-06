@@ -120,7 +120,13 @@ description):
        enforced by the node globally for each channel.
   * UpdateChannelPolicy
      * Allows the caller to update the fee schedule and channel policies for all channels
-       globally, or a particular channel
+       globally, or a particular channel.
+  * ForwardingHistory
+     * ForwardingHistory allows the caller to query the htlcswitch for a
+       record of all HTLCs forwarded.
+  * BakeMacaroon
+     * Bakes a new macaroon with the provided list of permissions and
+       restrictions
 
 ## Service: WalletUnlocker
 
@@ -139,6 +145,17 @@ $ go get -u github.com/lightningnetwork/lnd/lnrpc
 ```
 
 ## Generate protobuf definitions
+
+### Linux
+
+For linux there is an easy install script that is also used for the Travis CI
+build. Just run the following command (requires `sudo` permissions and the tools
+`make`, `go`, `wget` and `unzip` to be installed) from the repository's root
+folder:
+
+`./scripts/install_travis_proto.sh`
+
+### MacOS / Unix like systems
 
 1. Download [v.3.4.0](https://github.com/google/protobuf/releases/tag/v3.4.0) of
 `protoc` for your operating system and add it to your `PATH`.
@@ -164,12 +181,32 @@ $ cd $GOPATH/src/google.golang.org/genproto
 $ git reset --hard a8101f21cf983e773d0c1133ebc5424792003214
 ```
 
-4. Install `grpc-ecosystem/grpc-gateway` at commit `f2862b476edcef83412c7af8687c9cd8e4097c0f`.
+4. Install `grpc-ecosystem/grpc-gateway` at version `v1.8.6`.
 ```bash
 $ git clone https://github.com/grpc-ecosystem/grpc-gateway $GOPATH/src/github.com/grpc-ecosystem/grpc-gateway
 $ cd $GOPATH/src/github.com/grpc-ecosystem/grpc-gateway
-$ git reset --hard f2862b476edcef83412c7af8687c9cd8e4097c0f
+$ git reset --hard v1.8.6
 $ go install ./protoc-gen-grpc-gateway ./protoc-gen-swagger
 ```
 
-5. Run [`gen_protos.sh`](https://github.com/lightningnetwork/lnd/blob/master/lnrpc/gen_protos.sh) to generate new protobuf definitions.
+5. Run [`gen_protos.sh`](https://github.com/lightningnetwork/lnd/blob/master/lnrpc/gen_protos.sh)
+or `make rpc` to generate new protobuf definitions.
+
+## Format .proto files
+
+We use `clang-format` to make sure the `.proto` files are formatted correctly.
+You can install the formatter on Ubuntu by running `apt install clang-format`.
+
+Consult [this page](http://releases.llvm.org/download.html) to find binaries
+for other operating systems or distributions.
+
+## Makefile commands
+
+The following commands are available with `make`:
+
+* `rpc`: Compile `.proto` files (calls `lnrpc/gen_protos.sh`).
+* `rpc-format`: Formats all `.proto` files according to our formatting rules.
+  Requires `clang-format`, see previous chapter.
+* `rpc-check`: Runs both previous commands and makes sure the git work tree is
+  not dirty. This can be used to check that the `.proto` files are formatted
+  and compiled properly.

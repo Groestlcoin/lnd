@@ -25,6 +25,7 @@ import (
 	"github.com/lightningnetwork/lnd/chainntnfs"
 	"github.com/lightningnetwork/lnd/chanacceptor"
 	"github.com/lightningnetwork/lnd/channeldb"
+	"github.com/lightningnetwork/lnd/channelnotifier"
 	"github.com/lightningnetwork/lnd/discovery"
 	"github.com/lightningnetwork/lnd/htlcswitch"
 	"github.com/lightningnetwork/lnd/input"
@@ -32,6 +33,7 @@ import (
 	"github.com/lightningnetwork/lnd/lnpeer"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnwallet"
+	"github.com/lightningnetwork/lnd/lnwallet/chainfee"
 	"github.com/lightningnetwork/lnd/lnwire"
 )
 
@@ -47,6 +49,10 @@ const (
 	// testPollSleepMs is the number of milliseconds to sleep between
 	// each attempt to access the database to check its state.
 	testPollSleepMs = 500
+
+	// maxPending is the maximum number of channels we allow opening to the
+	// same peer in the max pending channels test.
+	maxPending = 4
 )
 
 var (
@@ -137,6 +143,24 @@ func (m *mockNotifier) RegisterSpendNtfn(outpoint *wire.OutPoint, _ []byte,
 	}, nil
 }
 
+type mockChanEvent struct {
+	openEvent        chan wire.OutPoint
+	pendingOpenEvent chan channelnotifier.PendingOpenChannelEvent
+}
+
+func (m *mockChanEvent) NotifyOpenChannelEvent(outpoint wire.OutPoint) {
+	m.openEvent <- outpoint
+}
+
+func (m *mockChanEvent) NotifyPendingOpenChannelEvent(outpoint wire.OutPoint,
+	pendingChannel *channeldb.OpenChannel) {
+
+	m.pendingOpenEvent <- channelnotifier.PendingOpenChannelEvent{
+		ChannelPoint:   &outpoint,
+		PendingChannel: pendingChannel,
+	}
+}
+
 type testNode struct {
 	privKey         *btcec.PrivateKey
 	addr            *lnwire.NetAddress
@@ -146,8 +170,10 @@ type testNode struct {
 	fundingMgr      *fundingManager
 	newChannels     chan *newChannelMsg
 	mockNotifier    *mockNotifier
+	mockChanEvent   *mockChanEvent
 	testDir         string
 	shutdownChannel chan struct{}
+	remoteFeatures  []lnwire.FeatureBit
 
 	remotePeer  *testNode
 	sendMessage func(lnwire.Message) error
@@ -175,20 +201,20 @@ func (n *testNode) SendMessageLazy(sync bool, msgs ...lnwire.Message) error {
 	return n.SendMessage(sync, msgs...)
 }
 
-func (n *testNode) WipeChannel(_ *wire.OutPoint) error {
-	return nil
-}
+func (n *testNode) WipeChannel(_ *wire.OutPoint) {}
 
 func (n *testNode) QuitSignal() <-chan struct{} {
 	return n.shutdownChannel
 }
 
-func (n *testNode) LocalGlobalFeatures() *lnwire.FeatureVector {
+func (n *testNode) LocalFeatures() *lnwire.FeatureVector {
 	return lnwire.NewFeatureVector(nil, nil)
 }
 
-func (n *testNode) RemoteGlobalFeatures() *lnwire.FeatureVector {
-	return lnwire.NewFeatureVector(nil, nil)
+func (n *testNode) RemoteFeatures() *lnwire.FeatureVector {
+	return lnwire.NewFeatureVector(
+		lnwire.NewRawFeatureVector(n.remoteFeatures...), nil,
+	)
 }
 
 func (n *testNode) AddNewChannel(channel *channeldb.OpenChannel,
@@ -218,7 +244,7 @@ func createTestWallet(cdb *channeldb.DB, netParams *chaincfg.Params,
 	notifier chainntnfs.ChainNotifier, wc lnwallet.WalletController,
 	signer input.Signer, keyRing keychain.SecretKeyRing,
 	bio lnwallet.BlockChainIO,
-	estimator lnwallet.FeeEstimator) (*lnwallet.LightningWallet, error) {
+	estimator chainfee.Estimator) (*lnwallet.LightningWallet, error) {
 
 	wallet, err := lnwallet.NewLightningWallet(lnwallet.Config{
 		Database:           cdb,
@@ -247,7 +273,7 @@ func createTestFundingManager(t *testing.T, privKey *btcec.PrivateKey,
 	options ...cfgOption) (*testNode, error) {
 
 	netParams := activeNetParams.Params
-	estimator := lnwallet.NewStaticFeeEstimator(62500, 0)
+	estimator := chainfee.NewStaticEstimator(62500, 0)
 
 	chainNotifier := &mockNotifier{
 		oneConfChannel: make(chan *chainntnfs.TxConfirmation, 1),
@@ -268,6 +294,17 @@ func createTestFundingManager(t *testing.T, privKey *btcec.PrivateKey,
 	}
 	bio := &mockChainIO{
 		bestHeight: fundingBroadcastHeight,
+	}
+
+	// The mock channel event notifier will receive events for each pending
+	// open and open channel. Because some tests will create multiple
+	// channels in a row before advancing to the next step, these channels
+	// need to be buffered.
+	evt := &mockChanEvent{
+		openEvent: make(chan wire.OutPoint, maxPending),
+		pendingOpenEvent: make(
+			chan channelnotifier.PendingOpenChannelEvent, maxPending,
+		),
 	}
 
 	dbDir := filepath.Join(tempTestDir, "cdb")
@@ -297,7 +334,9 @@ func createTestFundingManager(t *testing.T, privKey *btcec.PrivateKey,
 		Wallet:       lnw,
 		Notifier:     chainNotifier,
 		FeeEstimator: estimator,
-		SignMessage: func(pubKey *btcec.PublicKey, msg []byte) (*btcec.Signature, error) {
+		SignMessage: func(pubKey *btcec.PublicKey,
+			msg []byte) (input.Signature, error) {
+
 			return testSig, nil
 		},
 		SendAnnouncement: func(msg lnwire.Message,
@@ -332,11 +371,12 @@ func createTestFundingManager(t *testing.T, privKey *btcec.PrivateKey,
 			return nil, fmt.Errorf("unable to find channel")
 		},
 		DefaultRoutingPolicy: htlcswitch.ForwardingPolicy{
-			MinHTLC:       5,
+			MinHTLCOut:    5,
 			BaseFee:       100,
 			FeeRate:       1000,
 			TimeLockDelta: 10,
 		},
+		DefaultMinHtlcIn: 5,
 		NumRequiredConfs: func(chanAmt btcutil.Amount,
 			pushAmt lnwire.MilliSatoshi) uint16 {
 			return 3
@@ -371,11 +411,12 @@ func createTestFundingManager(t *testing.T, privKey *btcec.PrivateKey,
 			publTxChan <- txn
 			return nil
 		},
-		ZombieSweeperInterval:  1 * time.Hour,
-		ReservationTimeout:     1 * time.Nanosecond,
-		MaxPendingChannels:     DefaultMaxPendingChannels,
-		NotifyOpenChannelEvent: func(wire.OutPoint) {},
-		OpenChannelPredicate:   chainedAcceptor,
+		ZombieSweeperInterval:         1 * time.Hour,
+		ReservationTimeout:            1 * time.Nanosecond,
+		MaxPendingChannels:            DefaultMaxPendingChannels,
+		NotifyOpenChannelEvent:        evt.NotifyOpenChannelEvent,
+		OpenChannelPredicate:          chainedAcceptor,
+		NotifyPendingOpenChannelEvent: evt.NotifyPendingOpenChannelEvent,
 	}
 
 	for _, op := range options {
@@ -398,6 +439,7 @@ func createTestFundingManager(t *testing.T, privKey *btcec.PrivateKey,
 		publTxChan:      publTxChan,
 		fundingMgr:      f,
 		mockNotifier:    chainNotifier,
+		mockChanEvent:   evt,
 		testDir:         tempTestDir,
 		shutdownChannel: shutdownChan,
 		addr:            addr,
@@ -434,7 +476,7 @@ func recreateAliceFundingManager(t *testing.T, alice *testNode) {
 		Notifier:     oldCfg.Notifier,
 		FeeEstimator: oldCfg.FeeEstimator,
 		SignMessage: func(pubKey *btcec.PublicKey,
-			msg []byte) (*btcec.Signature, error) {
+			msg []byte) (input.Signature, error) {
 			return testSig, nil
 		},
 		SendAnnouncement: func(msg lnwire.Message,
@@ -460,11 +502,12 @@ func recreateAliceFundingManager(t *testing.T, alice *testNode) {
 		TempChanIDSeed: oldCfg.TempChanIDSeed,
 		FindChannel:    oldCfg.FindChannel,
 		DefaultRoutingPolicy: htlcswitch.ForwardingPolicy{
-			MinHTLC:       5,
+			MinHTLCOut:    5,
 			BaseFee:       100,
 			FeeRate:       1000,
 			TimeLockDelta: 10,
 		},
+		DefaultMinHtlcIn:       5,
 		RequiredRemoteMaxValue: oldCfg.RequiredRemoteMaxValue,
 		PublishTransaction: func(txn *wire.MsgTx) error {
 			publishChan <- txn
@@ -678,6 +721,18 @@ func fundChannel(t *testing.T, alice, bob *testNode, localFundingAmt,
 		t.Fatalf("alice did not publish funding tx")
 	}
 
+	// Make sure the notification about the pending channel was sent out.
+	select {
+	case <-alice.mockChanEvent.pendingOpenEvent:
+	case <-time.After(time.Second * 5):
+		t.Fatalf("alice did not send pending channel event")
+	}
+	select {
+	case <-bob.mockChanEvent.pendingOpenEvent:
+	case <-time.After(time.Second * 5):
+		t.Fatalf("bob did not send pending channel event")
+	}
+
 	// Finally, make sure neither have active reservation for the channel
 	// now pending open in the database.
 	assertNumPendingReservations(t, alice, bobPubKey, 0)
@@ -860,6 +915,18 @@ func assertMarkedOpen(t *testing.T, alice, bob *testNode,
 	fundingOutPoint *wire.OutPoint) {
 	t.Helper()
 
+	// Make sure the notification about the pending channel was sent out.
+	select {
+	case <-alice.mockChanEvent.openEvent:
+	case <-time.After(time.Second * 5):
+		t.Fatalf("alice did not send open channel event")
+	}
+	select {
+	case <-bob.mockChanEvent.openEvent:
+	case <-time.After(time.Second * 5):
+		t.Fatalf("bob did not send open channel event")
+	}
+
 	assertDatabaseState(t, alice, fundingOutPoint, markedOpen)
 	assertDatabaseState(t, bob, fundingOutPoint, markedOpen)
 }
@@ -922,7 +989,7 @@ func assertChannelAnnouncements(t *testing.T, alice, bob *testNode,
 				// _other_ node.
 				other := (j + 1) % 2
 				minHtlc := nodes[other].fundingMgr.cfg.
-					DefaultRoutingPolicy.MinHTLC
+					DefaultMinHtlcIn
 
 				// We might expect a custom MinHTLC value.
 				if len(customMinHtlc) > 0 {
@@ -2321,7 +2388,7 @@ func TestFundingManagerCustomChannelParameters(t *testing.T) {
 
 	// This is the custom parameters we'll use.
 	const csvDelay = 67
-	const minHtlc = 1234
+	const minHtlcIn = 1234
 
 	// We will consume the channel updates as we go, so no buffering is
 	// needed.
@@ -2340,7 +2407,7 @@ func TestFundingManagerCustomChannelParameters(t *testing.T) {
 		localFundingAmt: localAmt,
 		pushAmt:         lnwire.NewMSatFromSatoshis(pushAmt),
 		private:         false,
-		minHtlc:         minHtlc,
+		minHtlcIn:       minHtlcIn,
 		remoteCsvDelay:  csvDelay,
 		updates:         updateChan,
 		err:             errChan,
@@ -2377,9 +2444,9 @@ func TestFundingManagerCustomChannelParameters(t *testing.T) {
 	}
 
 	// Check that the custom minHTLC value is sent.
-	if openChannelReq.HtlcMinimum != minHtlc {
+	if openChannelReq.HtlcMinimum != minHtlcIn {
 		t.Fatalf("expected OpenChannel to have minHtlc %v, got %v",
-			minHtlc, openChannelReq.HtlcMinimum)
+			minHtlcIn, openChannelReq.HtlcMinimum)
 	}
 
 	chanID := openChannelReq.PendingChannelID
@@ -2464,7 +2531,7 @@ func TestFundingManagerCustomChannelParameters(t *testing.T) {
 
 	// The minimum HTLC value Alice can offer should be 5, and the minimum
 	// Bob can offer should be 1234.
-	if err := assertMinHtlc(resCtx, 5, minHtlc); err != nil {
+	if err := assertMinHtlc(resCtx, 5, minHtlcIn); err != nil {
 		t.Fatal(err)
 	}
 
@@ -2478,7 +2545,7 @@ func TestFundingManagerCustomChannelParameters(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := assertMinHtlc(resCtx, minHtlc, 5); err != nil {
+	if err := assertMinHtlc(resCtx, minHtlcIn, 5); err != nil {
 		t.Fatal(err)
 	}
 
@@ -2539,7 +2606,7 @@ func TestFundingManagerCustomChannelParameters(t *testing.T) {
 	// announcements. Alice should advertise the default MinHTLC value of
 	// 5, while bob should advertise the value minHtlc, since Alice
 	// required him to use it.
-	assertChannelAnnouncements(t, alice, bob, capacity, 5, minHtlc)
+	assertChannelAnnouncements(t, alice, bob, capacity, 5, minHtlcIn)
 
 	// The funding transaction is now confirmed, wait for the
 	// OpenStatusUpdate_ChanOpen update
@@ -2550,8 +2617,6 @@ func TestFundingManagerCustomChannelParameters(t *testing.T) {
 // channel with the same peer when MaxPending channels are pending fails.
 func TestFundingManagerMaxPendingChannels(t *testing.T) {
 	t.Parallel()
-
-	const maxPending = 4
 
 	alice, bob := setupFundingManagers(
 		t, func(cfg *fundingConfig) {
@@ -2863,7 +2928,7 @@ func TestFundingManagerFundAll(t *testing.T) {
 			Value: btcutil.Amount(
 				0.05 * btcutil.SatoshiPerBitcoin,
 			),
-			PkScript: make([]byte, 22),
+			PkScript: coinPkScript,
 			OutPoint: wire.OutPoint{
 				Hash:  chainhash.Hash{},
 				Index: 0,
@@ -2874,7 +2939,7 @@ func TestFundingManagerFundAll(t *testing.T) {
 			Value: btcutil.Amount(
 				0.06 * btcutil.SatoshiPerBitcoin,
 			),
-			PkScript: make([]byte, 22),
+			PkScript: coinPkScript,
 			OutPoint: wire.OutPoint{
 				Hash:  chainhash.Hash{},
 				Index: 1,
@@ -2945,5 +3010,94 @@ func TestFundingManagerFundAll(t *testing.T) {
 					txIn.PreviousOutPoint)
 			}
 		}
+	}
+}
+
+// TestGetUpfrontShutdown tests different combinations of inputs for getting a
+// shutdown script. It varies whether the peer has the feature set, whether
+// the user has provided a script and our local configuration to test that
+// GetUpfrontShutdownScript returns the expected outcome.
+func TestGetUpfrontShutdownScript(t *testing.T) {
+	upfrontScript := []byte("upfront script")
+	generatedScript := []byte("generated script")
+
+	getScript := func() (lnwire.DeliveryAddress, error) {
+		return generatedScript, nil
+	}
+
+	tests := []struct {
+		name           string
+		getScript      func() (lnwire.DeliveryAddress, error)
+		upfrontScript  lnwire.DeliveryAddress
+		peerEnabled    bool
+		localEnabled   bool
+		expectedScript lnwire.DeliveryAddress
+		expectedErr    error
+	}{
+		{
+			name:      "peer disabled, no shutdown",
+			getScript: getScript,
+		},
+		{
+			name:          "peer disabled, upfront provided",
+			upfrontScript: upfrontScript,
+			expectedErr:   errUpfrontShutdownScriptNotSupported,
+		},
+		{
+			name:           "peer enabled, upfront provided",
+			upfrontScript:  upfrontScript,
+			peerEnabled:    true,
+			expectedScript: upfrontScript,
+		},
+		{
+			name:        "peer enabled, local disabled",
+			peerEnabled: true,
+		},
+		{
+			name:           "local enabled, no upfront script",
+			getScript:      getScript,
+			peerEnabled:    true,
+			localEnabled:   true,
+			expectedScript: generatedScript,
+		},
+		{
+			name:           "local enabled, upfront script",
+			peerEnabled:    true,
+			upfrontScript:  upfrontScript,
+			localEnabled:   true,
+			expectedScript: upfrontScript,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+
+		t.Run(test.name, func(t *testing.T) {
+			var mockPeer testNode
+
+			// If the remote peer in the test should support upfront shutdown,
+			// add the feature bit.
+			if test.peerEnabled {
+				mockPeer.remoteFeatures = []lnwire.FeatureBit{
+					lnwire.UpfrontShutdownScriptOptional,
+				}
+			}
+
+			// Set the command line option in config as needed.
+			cfg = &config{EnableUpfrontShutdown: test.localEnabled}
+
+			addr, err := getUpfrontShutdownScript(
+				&mockPeer, test.upfrontScript, test.getScript,
+			)
+			if err != test.expectedErr {
+				t.Fatalf("got: %v, expected error: %v", err, test.expectedErr)
+			}
+
+			if !bytes.Equal(addr, test.expectedScript) {
+				t.Fatalf("expected address: %x, got: %x",
+					test.expectedScript, addr)
+			}
+
+		})
 	}
 }

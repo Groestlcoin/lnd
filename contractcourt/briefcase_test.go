@@ -14,9 +14,9 @@ import (
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/coreos/bbolt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/lightningnetwork/lnd/channeldb"
+	"github.com/lightningnetwork/lnd/channeldb/kvdb"
 	"github.com/lightningnetwork/lnd/input"
 	"github.com/lightningnetwork/lnd/lnwallet"
 )
@@ -44,6 +44,15 @@ var (
 			0x2d, 0xe7, 0x93, 0xe4,
 		},
 		Index: 2,
+	}
+
+	testChanPoint3 = wire.OutPoint{
+		Hash: chainhash.Hash{
+			0x48, 0x59, 0xe6, 0x96, 0x31, 0x13, 0xa1, 0x17,
+			0x51, 0xb6, 0x37, 0xd8, 0xfc, 0xd2, 0xc6, 0xda,
+			0x2d, 0xe7, 0x93, 0xe4,
+		},
+		Index: 3,
 	}
 
 	testPreimage = [32]byte{
@@ -95,7 +104,7 @@ var (
 	}
 )
 
-func makeTestDB() (*bbolt.DB, func(), error) {
+func makeTestDB() (kvdb.Backend, func(), error) {
 	// First, create a temporary directory to be used for the duration of
 	// this test.
 	tempDirName, err := ioutil.TempDir("", "arblog")
@@ -103,7 +112,7 @@ func makeTestDB() (*bbolt.DB, func(), error) {
 		return nil, nil, err
 	}
 
-	db, err := bbolt.Open(tempDirName+"/test.db", 0600, nil)
+	db, err := kvdb.Create(kvdb.BoltBackendName, tempDirName+"/test.db", true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -161,9 +170,9 @@ func assertResolversEqual(t *testing.T, originalResolver ContractResolver,
 			t.Fatalf("expected %v, got %v",
 				ogRes.broadcastHeight, diskRes.broadcastHeight)
 		}
-		if ogRes.htlcIndex != diskRes.htlcIndex {
-			t.Fatalf("expected %v, got %v", ogRes.htlcIndex,
-				diskRes.htlcIndex)
+		if ogRes.htlc.HtlcIndex != diskRes.htlc.HtlcIndex {
+			t.Fatalf("expected %v, got %v", ogRes.htlc.HtlcIndex,
+				diskRes.htlc.HtlcIndex)
 		}
 	}
 
@@ -184,9 +193,9 @@ func assertResolversEqual(t *testing.T, originalResolver ContractResolver,
 			t.Fatalf("expected %v, got %v",
 				ogRes.broadcastHeight, diskRes.broadcastHeight)
 		}
-		if ogRes.payHash != diskRes.payHash {
-			t.Fatalf("expected %v, got %v", ogRes.payHash,
-				diskRes.payHash)
+		if ogRes.htlc.RHash != diskRes.htlc.RHash {
+			t.Fatalf("expected %v, got %v", ogRes.htlc.RHash,
+				diskRes.htlc.RHash)
 		}
 	}
 
@@ -265,7 +274,9 @@ func TestContractInsertionRetrieval(t *testing.T) {
 		outputIncubating: true,
 		resolved:         true,
 		broadcastHeight:  102,
-		htlcIndex:        12,
+		htlc: channeldb.HTLC{
+			HtlcIndex: 12,
+		},
 	}
 	successResolver := htlcSuccessResolver{
 		htlcResolution: lnwallet.IncomingHtlcResolution{
@@ -278,8 +289,10 @@ func TestContractInsertionRetrieval(t *testing.T) {
 		outputIncubating: true,
 		resolved:         true,
 		broadcastHeight:  109,
-		payHash:          testPreimage,
-		sweepTx:          nil,
+		htlc: channeldb.HTLC{
+			RHash: testPreimage,
+		},
+		sweepTx: nil,
 	}
 	resolvers := []ContractResolver{
 		&timeoutResolver,
@@ -395,7 +408,9 @@ func TestContractResolution(t *testing.T) {
 		outputIncubating: true,
 		resolved:         true,
 		broadcastHeight:  192,
-		htlcIndex:        9912,
+		htlc: channeldb.HTLC{
+			HtlcIndex: 9912,
+		},
 	}
 
 	// First, we'll insert the resolver into the database and ensure that
@@ -454,7 +469,9 @@ func TestContractSwapping(t *testing.T) {
 		outputIncubating: true,
 		resolved:         true,
 		broadcastHeight:  102,
-		htlcIndex:        12,
+		htlc: channeldb.HTLC{
+			HtlcIndex: 12,
+		},
 	}
 	contestResolver := &htlcOutgoingContestResolver{
 		htlcTimeoutResolver: timeoutResolver,
@@ -531,6 +548,10 @@ func TestContractResolutionsStorage(t *testing.T) {
 					SweepSignDesc:   testSignDesc,
 				},
 			},
+		},
+		AnchorResolution: &lnwallet.AnchorResolution{
+			CommitAnchor:         testChanPoint3,
+			AnchorSignDescriptor: testSignDesc,
 		},
 	}
 

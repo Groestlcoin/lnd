@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/lightningnetwork/lnd/chainntnfs"
 	"github.com/lightningnetwork/lnd/input"
@@ -14,12 +16,22 @@ import (
 	"github.com/lightningnetwork/lnd/lnwallet"
 )
 
+type dummySignature struct{}
+
+func (s *dummySignature) Serialize() []byte {
+	return []byte{}
+}
+
+func (s *dummySignature) Verify(_ []byte, _ *btcec.PublicKey) bool {
+	return true
+}
+
 type mockSigner struct {
 }
 
 func (m *mockSigner) SignOutputRaw(tx *wire.MsgTx,
-	signDesc *input.SignDescriptor) ([]byte, error) {
-	return nil, nil
+	signDesc *input.SignDescriptor) (input.Signature, error) {
+	return &dummySignature{}, nil
 }
 
 func (m *mockSigner) ComputeInputScript(tx *wire.MsgTx,
@@ -144,7 +156,8 @@ func TestHtlcTimeoutResolver(t *testing.T) {
 			timeout:      true,
 			txToBroadcast: func() (*wire.MsgTx, error) {
 				witness, err := input.SenderHtlcSpendTimeout(
-					nil, signer, fakeSignDesc, sweepTx,
+					&dummySignature{}, txscript.SigHashAll,
+					signer, fakeSignDesc, sweepTx,
 				)
 				if err != nil {
 					return nil, err
@@ -163,8 +176,9 @@ func TestHtlcTimeoutResolver(t *testing.T) {
 			timeout:      false,
 			txToBroadcast: func() (*wire.MsgTx, error) {
 				witness, err := input.ReceiverHtlcSpendRedeem(
-					nil, fakePreimageBytes, signer,
-					fakeSignDesc, sweepTx,
+					&dummySignature{}, txscript.SigHashAll,
+					fakePreimageBytes, signer, fakeSignDesc,
+					sweepTx,
 				)
 				if err != nil {
 					return nil, err
@@ -216,7 +230,6 @@ func TestHtlcTimeoutResolver(t *testing.T) {
 				Notifier:   notifier,
 				PreimageDB: witnessBeacon,
 				IncubateOutputs: func(wire.OutPoint,
-					*lnwallet.CommitOutputResolution,
 					*lnwallet.OutgoingHtlcResolution,
 					*lnwallet.IncomingHtlcResolution,
 					uint32) error {
@@ -237,14 +250,17 @@ func TestHtlcTimeoutResolver(t *testing.T) {
 			},
 		}
 
-		resolver := &htlcTimeoutResolver{
-			ResolverKit: ResolverKit{
-				ChannelArbitratorConfig: chainCfg,
-				Checkpoint: func(_ ContractResolver) error {
-					checkPointChan <- struct{}{}
-					return nil
-				},
+		cfg := ResolverConfig{
+			ChannelArbitratorConfig: chainCfg,
+			Checkpoint: func(_ ContractResolver) error {
+				checkPointChan <- struct{}{}
+				return nil
 			},
+		}
+		resolver := &htlcTimeoutResolver{
+			contractResolverKit: *newContractResolverKit(
+				cfg,
+			),
 		}
 		resolver.htlcResolution.SweepSignDesc = *fakeSignDesc
 

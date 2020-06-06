@@ -45,8 +45,8 @@ func (p *mockPeer) SendMessageLazy(sync bool, msgs ...lnwire.Message) error {
 func (p *mockPeer) AddNewChannel(_ *channeldb.OpenChannel, _ <-chan struct{}) error {
 	return nil
 }
-func (p *mockPeer) WipeChannel(_ *wire.OutPoint) error { return nil }
-func (p *mockPeer) IdentityKey() *btcec.PublicKey      { return p.pk }
+func (p *mockPeer) WipeChannel(_ *wire.OutPoint)  {}
+func (p *mockPeer) IdentityKey() *btcec.PublicKey { return p.pk }
 func (p *mockPeer) PubKey() [33]byte {
 	var pubkey [33]byte
 	copy(pubkey[:], p.pk.SerializeCompressed())
@@ -56,10 +56,10 @@ func (p *mockPeer) Address() net.Addr { return nil }
 func (p *mockPeer) QuitSignal() <-chan struct{} {
 	return p.quit
 }
-func (p *mockPeer) LocalGlobalFeatures() *lnwire.FeatureVector {
+func (p *mockPeer) LocalFeatures() *lnwire.FeatureVector {
 	return nil
 }
-func (p *mockPeer) RemoteGlobalFeatures() *lnwire.FeatureVector {
+func (p *mockPeer) RemoteFeatures() *lnwire.FeatureVector {
 	return nil
 }
 

@@ -21,7 +21,7 @@
         "operationId": "WalletBalance",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcWalletBalanceResponse"
             }
@@ -38,7 +38,7 @@
         "operationId": "ChannelBalance",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcChannelBalanceResponse"
             }
@@ -55,7 +55,7 @@
         "operationId": "ChangePassword",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcChangePasswordResponse"
             }
@@ -82,7 +82,7 @@
         "operationId": "ListChannels",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcListChannelsResponse"
             }
@@ -116,6 +116,14 @@
             "required": false,
             "type": "boolean",
             "format": "boolean"
+          },
+          {
+            "name": "peer",
+            "description": "*\nFilters the response for channels with a target peer's pubkey. If peer is\nempty, all channels will be returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
           }
         ],
         "tags": [
@@ -127,7 +135,7 @@
         "operationId": "OpenChannelSync",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcChannelPoint"
             }
@@ -154,7 +162,7 @@
         "operationId": "AbandonChannel",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcAbandonChannelResponse"
             }
@@ -163,16 +171,26 @@
         "parameters": [
           {
             "name": "channel_point.funding_txid_str",
+            "description": "*\nHex-encoded string representing the byte-reversed hash of the funding\ntransaction.",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "channel_point.output_index",
+            "description": "/ The index of the output of the funding transaction",
             "in": "path",
             "required": true,
             "type": "integer",
             "format": "int64"
+          },
+          {
+            "name": "channel_point.funding_txid_bytes",
+            "description": "*\nTxid of the funding transaction. When using REST, this field must be\nencoded as base64.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
           }
         ],
         "tags": [
@@ -186,7 +204,7 @@
         "operationId": "ExportAllChannelBackups",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcChanBackupSnapshot"
             }
@@ -203,7 +221,7 @@
         "operationId": "RestoreChannelBackups",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcRestoreBackupResponse"
             }
@@ -230,7 +248,7 @@
         "operationId": "VerifyChanBackup",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcVerifyChanBackupResponse"
             }
@@ -257,7 +275,7 @@
         "operationId": "ExportChannelBackup",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcChannelBackup"
             }
@@ -266,12 +284,14 @@
         "parameters": [
           {
             "name": "chan_point.funding_txid_str",
+            "description": "*\nHex-encoded string representing the byte-reversed hash of the funding\ntransaction.",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "chan_point.output_index",
+            "description": "/ The index of the output of the funding transaction",
             "in": "path",
             "required": true,
             "type": "integer",
@@ -279,7 +299,7 @@
           },
           {
             "name": "chan_point.funding_txid_bytes",
-            "description": "/ Txid of the funding transaction.",
+            "description": "*\nTxid of the funding transaction. When using REST, this field must be\nencoded as base64.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -297,7 +317,7 @@
         "operationId": "ClosedChannels",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcClosedChannelsResponse"
             }
@@ -358,7 +378,7 @@
         "operationId": "PendingChannels",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcPendingChannelsResponse"
             }
@@ -375,7 +395,7 @@
         "operationId": "SendPaymentSync",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcSendResponse"
             }
@@ -402,7 +422,7 @@
         "operationId": "SendToRouteSync",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcSendResponse"
             }
@@ -429,25 +449,66 @@
         "operationId": "CloseChannel",
         "responses": {
           "200": {
-            "description": "(streaming responses)",
+            "description": "A successful response.(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/lnrpcCloseStatusUpdate"
+              "$ref": "#/x-stream-definitions/lnrpcCloseStatusUpdate"
             }
           }
         },
         "parameters": [
           {
             "name": "channel_point.funding_txid_str",
+            "description": "*\nHex-encoded string representing the byte-reversed hash of the funding\ntransaction.",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "channel_point.output_index",
+            "description": "/ The index of the output of the funding transaction",
             "in": "path",
             "required": true,
             "type": "integer",
             "format": "int64"
+          },
+          {
+            "name": "channel_point.funding_txid_bytes",
+            "description": "*\nTxid of the funding transaction. When using REST, this field must be\nencoded as base64.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "force",
+            "description": "/ If true, then the channel will be closed forcibly. This means the\n/ current commitment transaction will be signed and broadcast.",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "target_conf",
+            "description": "/ The target number of blocks that the closure transaction should be\n/ confirmed by.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sat_per_byte",
+            "description": "/ A manual fee rate set in sat/byte that should be used when crafting the\n/ closure transaction.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "delivery_address",
+            "description": "An optional address to send funds to in the case of a cooperative close.\nIf the channel was opened with an upfront shutdown script and this field\nis set, the request to close will fail because the channel must pay out\nto the upfront shutdown addresss.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -461,7 +522,7 @@
         "operationId": "UpdateChannelPolicy",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcPolicyUpdateResponse"
             }
@@ -488,7 +549,7 @@
         "operationId": "FeeReport",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcFeeReportResponse"
             }
@@ -506,7 +567,7 @@
         "operationId": "GenSeed",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcGenSeedResponse"
             }
@@ -515,7 +576,7 @@
         "parameters": [
           {
             "name": "aezeed_passphrase",
-            "description": "*\naezeed_passphrase is an optional user provided passphrase that will be used\nto encrypt the generated aezeed cipher seed.",
+            "description": "*\naezeed_passphrase is an optional user provided passphrase that will be used\nto encrypt the generated aezeed cipher seed. When using REST, this field\nmust be encoded as base64.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -523,7 +584,7 @@
           },
           {
             "name": "seed_entropy",
-            "description": "*\nseed_entropy is an optional 16-bytes generated via CSPRNG. If not\nspecified, then a fresh set of randomness will be used to create the seed.",
+            "description": "*\nseed_entropy is an optional 16-bytes generated via CSPRNG. If not\nspecified, then a fresh set of randomness will be used to create the seed.\nWhen using REST, this field must be encoded as base64.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -541,7 +602,7 @@
         "operationId": "GetInfo",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcGetInfoResponse"
             }
@@ -554,11 +615,11 @@
     },
     "/v1/graph": {
       "get": {
-        "summary": "* lncli: `describegraph`\nDescribeGraph returns a description of the latest graph state from the\npoint of view of the node. The graph information is partitioned into two\ncomponents: all the nodes/vertexes, and all the edges that connect the\nvertexes themselves.  As this is a directed graph, the edges also contain\nthe node directional specific routing policy which includes: the time lock\ndelta, fee information, etc.",
+        "summary": "* lncli: `describegraph`\nDescribeGraph returns a description of the latest graph state from the\npoint of view of the node. The graph information is partitioned into two\ncomponents: all the nodes/vertexes, and all the edges that connect the\nvertexes themselves. As this is a directed graph, the edges also contain\nthe node directional specific routing policy which includes: the time lock\ndelta, fee information, etc.",
         "operationId": "DescribeGraph",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcChannelGraph"
             }
@@ -585,7 +646,7 @@
         "operationId": "GetChanInfo",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcChannelEdge"
             }
@@ -594,6 +655,7 @@
         "parameters": [
           {
             "name": "chan_id",
+            "description": "*\nThe unique channel ID for the channel. The first 3 bytes are the block\nheight, the next 3 the index within the block, and the last 2 bytes are the\noutput index for the channel.",
             "in": "path",
             "required": true,
             "type": "string",
@@ -611,7 +673,7 @@
         "operationId": "GetNetworkInfo",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcNetworkInfo"
             }
@@ -628,7 +690,7 @@
         "operationId": "GetNodeInfo",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcNodeInfo"
             }
@@ -637,6 +699,7 @@
         "parameters": [
           {
             "name": "pub_key",
+            "description": "/ The 33-byte hex-encoded compressed public of the target node",
             "in": "path",
             "required": true,
             "type": "string"
@@ -655,13 +718,47 @@
         ]
       }
     },
+    "/v1/graph/nodemetrics": {
+      "get": {
+        "summary": "* lncli: `getnodemetrics`\nGetNodeMetrics returns node metrics calculated from the graph. Currently\nthe only supported metric is betweenness centrality of individual nodes.",
+        "operationId": "GetNodeMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/lnrpcNodeMetricsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "types",
+            "description": "/ The requested node metrics.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "UNKNOWN",
+                "BETWEENNESS_CENTRALITY"
+              ]
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Lightning"
+        ]
+      }
+    },
     "/v1/graph/routes/{pub_key}/{amt}": {
       "get": {
         "summary": "* lncli: `queryroutes`\nQueryRoutes attempts to query the daemon's Channel Router for a possible\nroute to a target destination capable of carrying a specific amount of\nsatoshis. The returned route contains the full details required to craft and\nsend an HTLC, also including the necessary information that should be\npresent within the Sphinx packet encapsulated within the HTLC.",
         "operationId": "QueryRoutes",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcQueryRoutesResponse"
             }
@@ -670,20 +767,30 @@
         "parameters": [
           {
             "name": "pub_key",
+            "description": "/ The 33-byte hex-encoded public key for the payment destination",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "amt",
+            "description": "*\nThe amount to send expressed in satoshis.\n\nThe fields amt and amt_msat are mutually exclusive.",
             "in": "path",
             "required": true,
             "type": "string",
             "format": "int64"
           },
           {
+            "name": "amt_msat",
+            "description": "*\nThe amount to send expressed in millisatoshis.\n\nThe fields amt and amt_msat are mutually exclusive.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
             "name": "final_cltv_delta",
-            "description": "/ An optional CLTV delta from the current height that should be used for the timelock of the final hop.",
+            "description": "*\nAn optional CLTV delta from the current height that should be used for the\ntimelock of the final hop. Note that unlike SendPayment, QueryRoutes does\nnot add any additional block padding on top of final_ctlv_delta. This\npadding of a few blocks needs to be added manually or otherwise failures may\nhappen when a block comes in while the payment is in flight.",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -691,7 +798,15 @@
           },
           {
             "name": "fee_limit.fixed",
-            "description": "/ The fee limit expressed as a fixed amount of satoshis.",
+            "description": "*\nThe fee limit expressed as a fixed amount of satoshis.\n\nThe fields fixed and fixed_msat are mutually exclusive.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "fee_limit.fixed_msat",
+            "description": "*\nThe fee limit expressed as a fixed amount of millisatoshis.\n\nThe fields fixed and fixed_msat are mutually exclusive.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -707,14 +822,15 @@
           },
           {
             "name": "ignored_nodes",
-            "description": "*\nA list of nodes to ignore during path finding.",
+            "description": "*\nA list of nodes to ignore during path finding. When using REST, these fields\nmust be encoded as base64.",
             "in": "query",
             "required": false,
             "type": "array",
             "items": {
               "type": "string",
               "format": "byte"
-            }
+            },
+            "collectionFormat": "multi"
           },
           {
             "name": "source_pub_key",
@@ -733,11 +849,57 @@
           },
           {
             "name": "cltv_limit",
-            "description": "* \nAn optional maximum total time lock for the route. If the source is empty or\nourselves, this should not exceed lnd's `--max-cltv-expiry` setting. If\nzero, then the value of `--max-cltv-expiry` is used as the limit.",
+            "description": "*\nAn optional maximum total time lock for the route. If the source is empty or\nourselves, this should not exceed lnd's `--max-cltv-expiry` setting. If\nzero, then the value of `--max-cltv-expiry` is used as the limit.",
             "in": "query",
             "required": false,
             "type": "integer",
             "format": "int64"
+          },
+          {
+            "name": "outgoing_chan_id",
+            "description": "*\nThe channel id of the channel that must be taken to the first hop. If zero,\nany channel may be used.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "last_hop_pubkey",
+            "description": "*\nThe pubkey of the last hop of the route. If empty, any hop may be used.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "dest_features",
+            "description": "*\nFeatures assumed to be supported by the final node. All transitive feature\ndependencies must also be set properly. For a given feature bit pair, either\noptional or remote may be set, but not both. If this field is nil or empty,\nthe router will try to load destination features from the graph as a\nfallback.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DATALOSS_PROTECT_REQ",
+                "DATALOSS_PROTECT_OPT",
+                "INITIAL_ROUING_SYNC",
+                "UPFRONT_SHUTDOWN_SCRIPT_REQ",
+                "UPFRONT_SHUTDOWN_SCRIPT_OPT",
+                "GOSSIP_QUERIES_REQ",
+                "GOSSIP_QUERIES_OPT",
+                "TLV_ONION_REQ",
+                "TLV_ONION_OPT",
+                "EXT_GOSSIP_QUERIES_REQ",
+                "EXT_GOSSIP_QUERIES_OPT",
+                "STATIC_REMOTE_KEY_REQ",
+                "STATIC_REMOTE_KEY_OPT",
+                "PAYMENT_ADDR_REQ",
+                "PAYMENT_ADDR_OPT",
+                "MPP_REQ",
+                "MPP_OPT"
+              ]
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -747,12 +909,12 @@
     },
     "/v1/initwallet": {
       "post": {
-        "summary": "* \nInitWallet is used when lnd is starting up for the first time to fully\ninitialize the daemon and its internal wallet. At the very least a wallet\npassword must be provided. This will be used to encrypt sensitive material\non disk.",
+        "summary": "*\nInitWallet is used when lnd is starting up for the first time to fully\ninitialize the daemon and its internal wallet. At the very least a wallet\npassword must be provided. This will be used to encrypt sensitive material\non disk.",
         "description": "In the case of a recovery scenario, the user can also specify their aezeed\nmnemonic and passphrase. If set, then the daemon will use this prior state\nto initialize its internal wallet.\n\nAlternatively, this can be used along with the GenSeed RPC to obtain a\nseed, then present it to the user. Once it has been verified by the user,\nthe seed can be fed into this RPC in order to commit the new wallet.",
         "operationId": "InitWallet",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcInitWalletResponse"
             }
@@ -779,7 +941,7 @@
         "operationId": "LookupInvoice",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcInvoice"
             }
@@ -788,13 +950,14 @@
         "parameters": [
           {
             "name": "r_hash_str",
+            "description": "*\nThe hex-encoded payment hash of the invoice to be looked up. The passed\npayment hash must be exactly 32 bytes, otherwise an error is returned.\nDeprecated now that the REST gateway supports base64 encoding of bytes\nfields.",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "r_hash",
-            "description": "/ The payment hash of the invoice to be looked up.",
+            "description": "*\nThe payment hash of the invoice to be looked up. When using REST, this field\nmust be encoded as base64.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -812,7 +975,7 @@
         "operationId": "ListInvoices",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcListInvoiceResponse"
             }
@@ -821,7 +984,7 @@
         "parameters": [
           {
             "name": "pending_only",
-            "description": "/ If set, only unsettled invoices will be returned in the response.",
+            "description": "*\nIf set, only invoices that are not settled and not canceled will be returned\nin the response.",
             "in": "query",
             "required": false,
             "type": "boolean",
@@ -861,7 +1024,7 @@
         "operationId": "AddInvoice",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcAddInvoiceResponse"
             }
@@ -884,13 +1047,13 @@
     },
     "/v1/invoices/subscribe": {
       "get": {
-        "summary": "*\nSubscribeInvoices returns a uni-directional stream (server -\u003e client) for\nnotifying the client of newly added/settled invoices. The caller can\noptionally specify the add_index and/or the settle_index. If the add_index\nis specified, then we'll first start by sending add invoice events for all\ninvoices with an add_index greater than the specified value.  If the\nsettle_index is specified, the next, we'll send out all settle events for\ninvoices with a settle_index greater than the specified value.  One or both\nof these fields can be set. If no fields are set, then we'll only send out\nthe latest add/settle events.",
+        "summary": "*\nSubscribeInvoices returns a uni-directional stream (server -\u003e client) for\nnotifying the client of newly added/settled invoices. The caller can\noptionally specify the add_index and/or the settle_index. If the add_index\nis specified, then we'll first start by sending add invoice events for all\ninvoices with an add_index greater than the specified value. If the\nsettle_index is specified, the next, we'll send out all settle events for\ninvoices with a settle_index greater than the specified value. One or both\nof these fields can be set. If no fields are set, then we'll only send out\nthe latest add/settle events.",
         "operationId": "SubscribeInvoices",
         "responses": {
           "200": {
-            "description": "(streaming responses)",
+            "description": "A successful response.(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/lnrpcInvoice"
+              "$ref": "#/x-stream-definitions/lnrpcInvoice"
             }
           }
         },
@@ -917,13 +1080,40 @@
         ]
       }
     },
+    "/v1/macaroon": {
+      "post": {
+        "summary": "* lncli: `bakemacaroon`\nBakeMacaroon allows the creation of a new macaroon with custom read and\nwrite permissions. No first-party caveats are added since this can be done\noffline.",
+        "operationId": "BakeMacaroon",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/lnrpcBakeMacaroonResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/lnrpcBakeMacaroonRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Lightning"
+        ]
+      }
+    },
     "/v1/newaddress": {
       "get": {
         "summary": "* lncli: `newaddress`\nNewAddress creates a new address under control of the local wallet.",
         "operationId": "NewAddress",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcNewAddressResponse"
             }
@@ -956,7 +1146,7 @@
         "operationId": "ListPayments",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcListPaymentsResponse"
             }
@@ -965,7 +1155,31 @@
         "parameters": [
           {
             "name": "include_incomplete",
-            "description": "*\nIf true, then return payments that have not yet fully completed. This means\nthat pending payments, as well as failed payments will show up if this\nfield is set to True.",
+            "description": "*\nIf true, then return payments that have not yet fully completed. This means\nthat pending payments, as well as failed payments will show up if this\nfield is set to true. This flag doesn't change the meaning of the indices,\nwhich are tied to individual payments.",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "index_offset",
+            "description": "*\nThe index of a payment that will be used as either the start or end of a\nquery to determine which payments should be returned in the response. The\nindex_offset is exclusive. In the case of a zero index_offset, the query\nwill start with the oldest payment when paginating forwards, or will end\nwith the most recent payment when paginating backwards.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "max_payments",
+            "description": "/ The maximal number of payments returned in the response to this query.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "reversed",
+            "description": "*\nIf set, the payments returned will result from seeking backwards from the\nspecified index offset. This can be used to paginate backwards. The order\nof the returned payments is always oldest first (ascending index order).",
             "in": "query",
             "required": false,
             "type": "boolean",
@@ -981,7 +1195,7 @@
         "operationId": "DeleteAllPayments",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcDeleteAllPaymentsResponse"
             }
@@ -998,7 +1212,7 @@
         "operationId": "DecodePayReq",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcPayReq"
             }
@@ -1007,6 +1221,7 @@
         "parameters": [
           {
             "name": "pay_req",
+            "description": "/ The payment request string to be decoded",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1023,12 +1238,22 @@
         "operationId": "ListPeers",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcListPeersResponse"
             }
           }
         },
+        "parameters": [
+          {
+            "name": "latest_error",
+            "description": "If true, only the last error that our peer sent us will be returned with\nthe peer's information, rather than the full set of historic errors we have\nstored.",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
         "tags": [
           "Lightning"
         ]
@@ -1038,7 +1263,7 @@
         "operationId": "ConnectPeer",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcConnectPeerResponse"
             }
@@ -1065,7 +1290,7 @@
         "operationId": "DisconnectPeer",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcDisconnectPeerResponse"
             }
@@ -1074,6 +1299,7 @@
         "parameters": [
           {
             "name": "pub_key",
+            "description": "/ The pubkey of the node to disconnect from",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1090,7 +1316,7 @@
         "operationId": "SignMessage",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcSignMessageResponse"
             }
@@ -1114,11 +1340,11 @@
     "/v1/switch": {
       "post": {
         "summary": "* lncli: `fwdinghistory`\nForwardingHistory allows the caller to query the htlcswitch for a record of\nall HTLCs forwarded within the target time range, and integer offset\nwithin that time range. If no time-range is specified, then the first chunk\nof the past 24 hrs of forwarding history are returned.",
-        "description": "A list of forwarding events are returned. The size of each forwarding event\nis 40 bytes, and the max message size able to be returned in gRPC is 4 MiB.\nAs a result each message can only contain 50k entries.  Each response has\nthe index offset of the last entry. The index offset can be provided to the\nrequest to allow the caller to skip a series of records.",
+        "description": "A list of forwarding events are returned. The size of each forwarding event\nis 40 bytes, and the max message size able to be returned in gRPC is 4 MiB.\nAs a result each message can only contain 50k entries. Each response has\nthe index offset of the last entry. The index offset can be provided to the\nrequest to allow the caller to skip a series of records.",
         "operationId": "ForwardingHistory",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcForwardingHistoryResponse"
             }
@@ -1145,7 +1371,7 @@
         "operationId": "GetTransactions",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcTransactionDetails"
             }
@@ -1160,7 +1386,7 @@
         "operationId": "SendCoins",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcSendCoinsResponse"
             }
@@ -1187,7 +1413,7 @@
         "operationId": "EstimateFee",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcEstimateFeeResponse"
             }
@@ -1196,7 +1422,7 @@
         "parameters": [
           {
             "name": "target_conf",
-            "description": "/ The target number of blocks that this transaction should be confirmed by.",
+            "description": "/ The target number of blocks that this transaction should be confirmed\n/ by.",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -1214,7 +1440,7 @@
         "operationId": "UnlockWallet",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcUnlockWalletResponse"
             }
@@ -1241,7 +1467,7 @@
         "operationId": "ListUnspent",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcListUnspentResponse"
             }
@@ -1276,7 +1502,7 @@
         "operationId": "VerifyMessage",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/lnrpcVerifyMessageResponse"
             }
@@ -1317,9 +1543,62 @@
         "OPEN_CHANNEL",
         "CLOSED_CHANNEL",
         "ACTIVE_CHANNEL",
-        "INACTIVE_CHANNEL"
+        "INACTIVE_CHANNEL",
+        "PENDING_OPEN_CHANNEL"
       ],
       "default": "OPEN_CHANNEL"
+    },
+    "FailureFailureCode": {
+      "type": "string",
+      "enum": [
+        "RESERVED",
+        "INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS",
+        "INCORRECT_PAYMENT_AMOUNT",
+        "FINAL_INCORRECT_CLTV_EXPIRY",
+        "FINAL_INCORRECT_HTLC_AMOUNT",
+        "FINAL_EXPIRY_TOO_SOON",
+        "INVALID_REALM",
+        "EXPIRY_TOO_SOON",
+        "INVALID_ONION_VERSION",
+        "INVALID_ONION_HMAC",
+        "INVALID_ONION_KEY",
+        "AMOUNT_BELOW_MINIMUM",
+        "FEE_INSUFFICIENT",
+        "INCORRECT_CLTV_EXPIRY",
+        "CHANNEL_DISABLED",
+        "TEMPORARY_CHANNEL_FAILURE",
+        "REQUIRED_NODE_FEATURE_MISSING",
+        "REQUIRED_CHANNEL_FEATURE_MISSING",
+        "UNKNOWN_NEXT_PEER",
+        "TEMPORARY_NODE_FAILURE",
+        "PERMANENT_NODE_FAILURE",
+        "PERMANENT_CHANNEL_FAILURE",
+        "EXPIRY_TOO_FAR",
+        "MPP_TIMEOUT",
+        "INTERNAL_FAILURE",
+        "UNKNOWN_FAILURE",
+        "UNREADABLE_FAILURE"
+      ],
+      "default": "RESERVED",
+      "description": " - RESERVED: *\nThe numbers assigned in this enumeration match the failure codes as\ndefined in BOLT #4. Because protobuf 3 requires enums to start with 0,\na RESERVED value is added.\n - INTERNAL_FAILURE: *\nAn internal error occurred.\n - UNKNOWN_FAILURE: *\nThe error source is known, but the failure itself couldn't be decoded.\n - UNREADABLE_FAILURE: *\nAn unreadable failure result is returned if the received failure message\ncannot be decrypted. In that case the error source is unknown."
+    },
+    "ForceClosedChannelAnchorState": {
+      "type": "string",
+      "enum": [
+        "LIMBO",
+        "RECOVERED",
+        "LOST"
+      ],
+      "default": "LIMBO"
+    },
+    "HTLCAttemptHTLCStatus": {
+      "type": "string",
+      "enum": [
+        "IN_FLIGHT",
+        "SUCCEEDED",
+        "FAILED"
+      ],
+      "default": "IN_FLIGHT"
     },
     "InvoiceInvoiceState": {
       "type": "string",
@@ -1341,6 +1620,14 @@
       ],
       "default": "UNKNOWN"
     },
+    "PeerEventEventType": {
+      "type": "string",
+      "enum": [
+        "PEER_ONLINE",
+        "PEER_OFFLINE"
+      ],
+      "default": "PEER_ONLINE"
+    },
     "PeerSyncType": {
       "type": "string",
       "enum": [
@@ -1361,6 +1648,38 @@
         "closing_txid": {
           "type": "string",
           "title": "/ The transaction id of the closing transaction"
+        }
+      }
+    },
+    "PendingChannelsResponseCommitments": {
+      "type": "object",
+      "properties": {
+        "local_txid": {
+          "type": "string",
+          "description": "/ Hash of the local version of the commitment tx."
+        },
+        "remote_txid": {
+          "type": "string",
+          "description": "/ Hash of the remote version of the commitment tx."
+        },
+        "remote_pending_txid": {
+          "type": "string",
+          "description": "/ Hash of the remote pending version of the commitment tx."
+        },
+        "local_commit_fee_sat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The amount in satoshis calculated to be paid in fees for the local\ncommitment."
+        },
+        "remote_commit_fee_sat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The amount in satoshis calculated to be paid in fees for the remote\ncommitment."
+        },
+        "remote_pending_commit_fee_sat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The amount in satoshis calculated to be paid in fees for the remote\npending commitment."
         }
       }
     },
@@ -1400,6 +1719,9 @@
           "items": {
             "$ref": "#/definitions/lnrpcPendingHTLC"
           }
+        },
+        "anchor": {
+          "$ref": "#/definitions/ForceClosedChannelAnchorState"
         }
       }
     },
@@ -1427,12 +1749,20 @@
         "local_chan_reserve_sat": {
           "type": "string",
           "format": "int64",
-          "description": "/ The minimum satoshis this node is required to reserve in its balance."
+          "description": "/ The minimum satoshis this node is required to reserve in its\n/ balance."
         },
         "remote_chan_reserve_sat": {
           "type": "string",
           "format": "int64",
           "description": "*\nThe minimum satoshis the other node is required to reserve in its\nbalance."
+        },
+        "initiator": {
+          "$ref": "#/definitions/lnrpcInitiator",
+          "description": "The party that initiated opening the channel."
+        },
+        "commitment_type": {
+          "$ref": "#/definitions/lnrpcCommitmentType",
+          "description": "/ The commitment type used by this channel."
         }
       }
     },
@@ -1476,6 +1806,10 @@
           "type": "string",
           "format": "int64",
           "title": "/ The balance in satoshis encumbered in this channel"
+        },
+        "commitments": {
+          "$ref": "#/definitions/PendingChannelsResponseCommitments",
+          "description": "*\nA list of valid commitment transactions. Any of these can confirm at\nthis point."
         }
       }
     },
@@ -1491,7 +1825,7 @@
         },
         "payment_request": {
           "type": "string",
-          "description": "*\nA bare-bones invoice for a payment within the Lightning Network.  With the\ndetails of the invoice, the sender has all the data necessary to send a\npayment to the recipient."
+          "description": "*\nA bare-bones invoice for a payment within the Lightning Network. With the\ndetails of the invoice, the sender has all the data necessary to send a\npayment to the recipient."
         },
         "add_index": {
           "type": "string",
@@ -1510,7 +1844,28 @@
       ],
       "default": "WITNESS_PUBKEY_HASH",
       "description": "- `p2wkh`: Pay to witness key hash (`WITNESS_PUBKEY_HASH` = 0)\n- `np2wkh`: Pay to nested witness key hash (`NESTED_PUBKEY_HASH` = 1)",
-      "title": "* \n`AddressType` has to be one of:"
+      "title": "*\n`AddressType` has to be one of:"
+    },
+    "lnrpcBakeMacaroonRequest": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/lnrpcMacaroonPermission"
+          },
+          "description": "/ The list of permissions the new macaroon should grant."
+        }
+      }
+    },
+    "lnrpcBakeMacaroonResponse": {
+      "type": "object",
+      "properties": {
+        "macaroon": {
+          "type": "string",
+          "description": "/ The hex encoded macaroon, serialized in binary format."
+        }
+      }
     },
     "lnrpcChain": {
       "type": "object",
@@ -1538,18 +1893,51 @@
         }
       }
     },
+    "lnrpcChanPointShim": {
+      "type": "object",
+      "properties": {
+        "amt": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe size of the pre-crafted output to be used as the channel point for this\nchannel funding."
+        },
+        "chan_point": {
+          "$ref": "#/definitions/lnrpcChannelPoint",
+          "description": "/ The target channel point to refrence in created commitment transactions."
+        },
+        "local_key": {
+          "$ref": "#/definitions/lnrpcKeyDescriptor",
+          "description": "/ Our local key to use when creating the multi-sig output."
+        },
+        "remote_key": {
+          "type": "string",
+          "format": "byte",
+          "description": "/ The key of the remote party to use when creating the multi-sig output."
+        },
+        "pending_chan_id": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nIf non-zero, then this will be used as the pending channel ID on the wire\nprotocol to initate the funding request. This is an optional field, and\nshould only be set if the responder is already expecting a specific pending\nchannel ID."
+        },
+        "thaw_height": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThis uint32 indicates if this channel is to be considered 'frozen'. A\nfrozen channel does not allow a cooperative channel close by the\ninitiator. The thaw_height is the height that this restriction stops\napplying to the channel."
+        }
+      }
+    },
     "lnrpcChangePasswordRequest": {
       "type": "object",
       "properties": {
         "current_password": {
           "type": "string",
           "format": "byte",
-          "description": "*\ncurrent_password should be the current valid passphrase used to unlock the\ndaemon."
+          "description": "*\ncurrent_password should be the current valid passphrase used to unlock the\ndaemon. When using REST, this field must be encoded as base64."
         },
         "new_password": {
           "type": "string",
           "format": "byte",
-          "description": "*\nnew_password should be the new passphrase that will be needed to unlock the\ndaemon."
+          "description": "*\nnew_password should be the new passphrase that will be needed to unlock the\ndaemon. When using REST, this field must be encoded as base64."
         }
       }
     },
@@ -1666,7 +2054,35 @@
         "static_remote_key": {
           "type": "boolean",
           "format": "boolean",
-          "description": "*\nIf true, then this channel uses the modern commitment format where the key\nin the output of the remote party does not change each state. This makes\nback up and recovery easier as when the channel is closed, the funds go\ndirectly to that key."
+          "description": "/ Deprecated. Use commitment_type."
+        },
+        "commitment_type": {
+          "$ref": "#/definitions/lnrpcCommitmentType",
+          "description": "/ The commitment type used by this channel."
+        },
+        "lifetime": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe number of seconds that the channel has been monitored by the channel\nscoring system. Scores are currently not persisted, so this value may be\nless than the lifetime of the channel [EXPERIMENTAL]."
+        },
+        "uptime": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe number of seconds that the remote peer has been observed as being online\nby the channel scoring system over the lifetime of the channel\n[EXPERIMENTAL]."
+        },
+        "close_address": {
+          "type": "string",
+          "description": "*\nClose address is the address that we will enforce payout to on cooperative\nclose if the channel was opened utilizing option upfront shutdown. This\nvalue can be set on channel open by setting close_address in an open channel\nrequest. If this value is not set, you can still choose a payout address by\ncooperatively closing with the delivery_address field set."
+        },
+        "push_amount_sat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The amount that the initiator of the channel optionally pushed to the remote\nparty on channel open. This amount will be zero if the channel initiator did\nnot push any funds to the remote peer. If the initiator field is true, we\npushed this amount to our peer, if it is false, the remote peer pushed this\namount to us."
+        },
+        "thaw_height": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThis uint32 indicates if this channel is to be considered 'frozen'. A\nfrozen channel doest not allow a cooperative channel close by the\ninitiator. The thaw_height is the height that this restriction stops\napplying to the channel. This field is optional, not setting it or using a\nvalue of zero will mean the channel has no additional restrictions."
         }
       }
     },
@@ -1691,7 +2107,7 @@
         "funding_amt": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The funding amount in satoshis that initiator wishes to use in the channel."
+          "description": "/ The funding amount in satoshis that initiator wishes to use in the\n/ channel."
         },
         "push_amt": {
           "type": "string",
@@ -1706,12 +2122,12 @@
         "max_value_in_flight": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The maximum amount of coins in millisatoshis that can be pending in this channel."
+          "description": "/ The maximum amount of coins in millisatoshis that can be pending in this\n/ channel."
         },
         "channel_reserve": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The minimum amount of satoshis the initiator requires us to have at all times."
+          "description": "/ The minimum amount of satoshis the initiator requires us to have at all\n/ times."
         },
         "min_htlc": {
           "type": "string",
@@ -1721,12 +2137,12 @@
         "fee_per_kw": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The initial fee rate that the initiator suggests for both commitment transactions."
+          "description": "/ The initial fee rate that the initiator suggests for both commitment\n/ transactions."
         },
         "csv_delay": {
           "type": "integer",
           "format": "int64",
-          "description": "*\nThe number of blocks to use for the relative time lock in the pay-to-self output\nof both commitment transactions."
+          "description": "*\nThe number of blocks to use for the relative time lock in the pay-to-self\noutput of both commitment transactions."
         },
         "max_accepted_htlcs": {
           "type": "integer",
@@ -1736,7 +2152,7 @@
         "channel_flags": {
           "type": "integer",
           "format": "int64",
-          "description": "/ A bit-field which the initiator uses to specify proposed channel behavior."
+          "description": "/ A bit-field which the initiator uses to specify proposed channel\n/ behavior."
         }
       }
     },
@@ -1750,7 +2166,7 @@
         "chan_backup": {
           "type": "string",
           "format": "byte",
-          "description": "*\nIs an encrypted single-chan backup. this can be passed to\nRestoreChannelBackups, or the WalletUnlocker Init and Unlock methods in\norder to trigger the recovery protocol."
+          "description": "*\nIs an encrypted single-chan backup. this can be passed to\nRestoreChannelBackups, or the WalletUnlocker Init and Unlock methods in\norder to trigger the recovery protocol. When using REST, this field must be\nencoded as base64."
         }
       }
     },
@@ -1828,6 +2244,14 @@
         "close_type": {
           "$ref": "#/definitions/ChannelCloseSummaryClosureType",
           "description": "/ Details on how the channel was closed."
+        },
+        "open_initiator": {
+          "$ref": "#/definitions/lnrpcInitiator",
+          "description": "*\nOpen initiator is the party that initiated opening the channel. Note that\nthis value may be unknown if the channel was closed before we migrated to\nstore open channel information after close."
+        },
+        "close_initiator": {
+          "$ref": "#/definitions/lnrpcInitiator",
+          "description": "*\nClose initiator indicates which party initiated the close. This value will\nbe unknown for channels that were cooperatively closed before we started\ntracking cooperative close initiators. Note that this indicates which party\ninitiated a close, and it is possible for both to initiate cooperative or\nforce closes, although only one party's close will be confirmed on chain."
         }
       }
     },
@@ -1919,6 +2343,9 @@
         "inactive_channel": {
           "$ref": "#/definitions/lnrpcChannelPoint"
         },
+        "pending_open_channel": {
+          "$ref": "#/definitions/lnrpcPendingUpdate"
+        },
         "type": {
           "$ref": "#/definitions/ChannelEventUpdateUpdateType"
         }
@@ -1927,7 +2354,12 @@
     "lnrpcChannelFeeReport": {
       "type": "object",
       "properties": {
-        "chan_point": {
+        "chan_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "/ The short channel id that this fee report belongs to."
+        },
+        "channel_point": {
           "type": "string",
           "description": "/ The channel that this fee report belongs to."
         },
@@ -1939,12 +2371,12 @@
         "fee_per_mil": {
           "type": "string",
           "format": "int64",
-          "description": "/ The amount charged per milli-satoshis transferred expressed in millionths of a satoshi."
+          "description": "/ The amount charged per milli-satoshis transferred expressed in\n/ millionths of a satoshi."
         },
         "fee_rate": {
           "type": "number",
           "format": "double",
-          "description": "/ The effective fee rate in milli-satoshis. Computed by dividing the fee_per_mil value by 1 million."
+          "description": "/ The effective fee rate in milli-satoshis. Computed by dividing the\n/ fee_per_mil value by 1 million."
         }
       }
     },
@@ -1982,16 +2414,81 @@
         "funding_txid_bytes": {
           "type": "string",
           "format": "byte",
-          "title": "/ Txid of the funding transaction"
+          "description": "*\nTxid of the funding transaction. When using REST, this field must be\nencoded as base64."
         },
         "funding_txid_str": {
           "type": "string",
-          "title": "/ Hex-encoded string representing the funding transaction"
+          "description": "*\nHex-encoded string representing the byte-reversed hash of the funding\ntransaction."
         },
         "output_index": {
           "type": "integer",
           "format": "int64",
           "title": "/ The index of the output of the funding transaction"
+        }
+      }
+    },
+    "lnrpcChannelUpdate": {
+      "type": "object",
+      "properties": {
+        "signature": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe signature that validates the announced data and proves the ownership\nof node id."
+        },
+        "chain_hash": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe target chain that this channel was opened within. This value\nshould be the genesis hash of the target chain. Along with the short\nchannel ID, this uniquely identifies the channel globally in a\nblockchain."
+        },
+        "chan_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "*\nThe unique description of the funding transaction."
+        },
+        "timestamp": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nA timestamp that allows ordering in the case of multiple announcements.\nWe should ignore the message if timestamp is not greater than the\nlast-received."
+        },
+        "message_flags": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThe bitfield that describes whether optional fields are present in this\nupdate. Currently, the least-significant bit must be set to 1 if the\noptional field MaxHtlc is present."
+        },
+        "channel_flags": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThe bitfield that describes additional meta-data concerning how the\nupdate is to be interpreted. Currently, the least-significant bit must be\nset to 0 if the creating node corresponds to the first node in the\npreviously sent channel announcement and 1 otherwise. If the second bit\nis set, then the channel is set to be disabled."
+        },
+        "time_lock_delta": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThe minimum number of blocks this node requires to be added to the expiry\nof HTLCs. This is a security parameter determined by the node operator.\nThis value represents the required gap between the time locks of the\nincoming and outgoing HTLC's set to this node."
+        },
+        "htlc_minimum_msat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "*\nThe minimum HTLC value which will be accepted."
+        },
+        "base_fee": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThe base fee that must be used for incoming HTLC's to this particular\nchannel. This value will be tacked onto the required for a payment\nindependent of the size of the payment."
+        },
+        "fee_rate": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThe fee rate that will be charged per millionth of a satoshi."
+        },
+        "htlc_maximum_msat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "*\nThe maximum HTLC value which will be accepted."
+        },
+        "extra_opaque_data": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe set of data that was appended to this message, some of which we may\nnot actually know how to iterate or parse. By holding onto this data, we\nensure that we're able to properly validate the set of signatures that\ncover these new fields, and ensure we're able to make upgrades to the\nnetwork in a forwards compatible manner."
         }
       }
     },
@@ -2038,6 +2535,17 @@
         }
       }
     },
+    "lnrpcCommitmentType": {
+      "type": "string",
+      "enum": [
+        "LEGACY",
+        "STATIC_REMOTE_KEY",
+        "ANCHORS",
+        "UNKNOWN_COMMITMENT_TYPE"
+      ],
+      "default": "LEGACY",
+      "description": " - LEGACY: *\nA channel using the legacy commitment format having tweaked to_remote\nkeys.\n - STATIC_REMOTE_KEY: *\nA channel that uses the modern commitment format where the key in the\noutput of the remote party does not change each state. This makes back\nup and recovery easier as when the channel is closed, the funds go\ndirectly to that key.\n - ANCHORS: *\nA channel that uses a commitment format that has anchor outputs on the\ncommitments, allowing fee bumping after a force close transaction has\nbeen broadcast.\n - UNKNOWN_COMMITMENT_TYPE: *\nReturned when the commitment type isn't known or unavailable."
+    },
     "lnrpcConnectPeerRequest": {
       "type": "object",
       "properties": {
@@ -2048,7 +2556,7 @@
         "perm": {
           "type": "boolean",
           "format": "boolean",
-          "description": "* If set, the daemon will attempt to persistently connect to the target\npeer.  Otherwise, the call will be synchronous."
+          "description": "* If set, the daemon will attempt to persistently connect to the target\npeer. Otherwise, the call will be synchronous."
         }
       }
     },
@@ -2069,6 +2577,21 @@
     "lnrpcDisconnectPeerResponse": {
       "type": "object"
     },
+    "lnrpcEdgeLocator": {
+      "type": "object",
+      "properties": {
+        "channel_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "/ The short channel id of this edge."
+        },
+        "direction_reverse": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "*\nThe direction of this edge. If direction_reverse is false, the direction\nof this edge is from the channel endpoint with the lexicographically smaller\npub key to the endpoint with the larger pub key. If direction_reverse is\nis true, the edge goes the other way."
+        }
+      }
+    },
     "lnrpcEstimateFeeResponse": {
       "type": "object",
       "properties": {
@@ -2084,13 +2607,100 @@
         }
       }
     },
+    "lnrpcFailure": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/definitions/FailureFailureCode",
+          "title": "/ Failure code as defined in the Lightning spec"
+        },
+        "channel_update": {
+          "$ref": "#/definitions/lnrpcChannelUpdate",
+          "description": "/ An optional channel update message."
+        },
+        "htlc_msat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "/ A failure type-dependent htlc value."
+        },
+        "onion_sha_256": {
+          "type": "string",
+          "format": "byte",
+          "description": "/ The sha256 sum of the onion payload."
+        },
+        "cltv_expiry": {
+          "type": "integer",
+          "format": "int64",
+          "description": "/ A failure type-dependent cltv expiry value."
+        },
+        "flags": {
+          "type": "integer",
+          "format": "int64",
+          "description": "/ A failure type-dependent flags value."
+        },
+        "failure_source_index": {
+          "type": "integer",
+          "format": "int64",
+          "description": "*\nThe position in the path of the intermediate or final node that generated\nthe failure message. Position zero is the sender node."
+        },
+        "height": {
+          "type": "integer",
+          "format": "int64",
+          "description": "/ A failure type-dependent block height."
+        }
+      }
+    },
+    "lnrpcFeature": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "is_required": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "is_known": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "lnrpcFeatureBit": {
+      "type": "string",
+      "enum": [
+        "DATALOSS_PROTECT_REQ",
+        "DATALOSS_PROTECT_OPT",
+        "INITIAL_ROUING_SYNC",
+        "UPFRONT_SHUTDOWN_SCRIPT_REQ",
+        "UPFRONT_SHUTDOWN_SCRIPT_OPT",
+        "GOSSIP_QUERIES_REQ",
+        "GOSSIP_QUERIES_OPT",
+        "TLV_ONION_REQ",
+        "TLV_ONION_OPT",
+        "EXT_GOSSIP_QUERIES_REQ",
+        "EXT_GOSSIP_QUERIES_OPT",
+        "STATIC_REMOTE_KEY_REQ",
+        "STATIC_REMOTE_KEY_OPT",
+        "PAYMENT_ADDR_REQ",
+        "PAYMENT_ADDR_OPT",
+        "MPP_REQ",
+        "MPP_OPT"
+      ],
+      "default": "DATALOSS_PROTECT_REQ"
+    },
     "lnrpcFeeLimit": {
       "type": "object",
       "properties": {
         "fixed": {
           "type": "string",
           "format": "int64",
-          "description": "/ The fee limit expressed as a fixed amount of satoshis."
+          "description": "*\nThe fee limit expressed as a fixed amount of satoshis.\n\nThe fields fixed and fixed_msat are mutually exclusive."
+        },
+        "fixed_msat": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe fee limit expressed as a fixed amount of millisatoshis.\n\nThe fields fixed and fixed_msat are mutually exclusive."
         },
         "percent": {
           "type": "string",
@@ -2107,22 +2717,37 @@
           "items": {
             "$ref": "#/definitions/lnrpcChannelFeeReport"
           },
-          "description": "/ An array of channel fee reports which describes the current fee schedule for each channel."
+          "description": "/ An array of channel fee reports which describes the current fee schedule\n/ for each channel."
         },
         "day_fee_sum": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The total amount of fee revenue (in satoshis) the switch has collected over the past 24 hrs."
+          "description": "/ The total amount of fee revenue (in satoshis) the switch has collected\n/ over the past 24 hrs."
         },
         "week_fee_sum": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The total amount of fee revenue (in satoshis) the switch has collected over the past 1 week."
+          "description": "/ The total amount of fee revenue (in satoshis) the switch has collected\n/ over the past 1 week."
         },
         "month_fee_sum": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The total amount of fee revenue (in satoshis) the switch has collected over the past 1 month."
+          "description": "/ The total amount of fee revenue (in satoshis) the switch has collected\n/ over the past 1 month."
+        }
+      }
+    },
+    "lnrpcFloatMetric": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "format": "double",
+          "description": "/ Arbitrary float value."
+        },
+        "normalized_value": {
+          "type": "number",
+          "format": "double",
+          "description": "/ The value normalized to [0,1] or [-1,1]."
         }
       }
     },
@@ -2132,7 +2757,7 @@
         "timestamp": {
           "type": "string",
           "format": "uint64",
-          "description": "/ Timestamp is the time (unix epoch offset) that this circuit was completed."
+          "description": "/ Timestamp is the time (unix epoch offset) that this circuit was\n/ completed."
         },
         "chan_id_in": {
           "type": "string",
@@ -2142,17 +2767,17 @@
         "chan_id_out": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The outgoing channel ID that carried the preimage that completed the circuit."
+          "description": "/ The outgoing channel ID that carried the preimage that completed the\n/ circuit."
         },
         "amt_in": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The total amount (in satoshis) of the incoming HTLC that created half the circuit."
+          "description": "/ The total amount (in satoshis) of the incoming HTLC that created half\n/ the circuit."
         },
         "amt_out": {
           "type": "string",
           "format": "uint64",
-          "description": "/ The total amount (in satoshis) of the outgoing HTLC that created the second half of the circuit."
+          "description": "/ The total amount (in satoshis) of the outgoing HTLC that created the\n/ second half of the circuit."
         },
         "fee": {
           "type": "string",
@@ -2163,6 +2788,16 @@
           "type": "string",
           "format": "uint64",
           "description": "/ The total fee (in milli-satoshis) that this payment circuit carried."
+        },
+        "amt_in_msat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "/ The total amount (in milli-satoshis) of the incoming HTLC that created\n/ half the circuit."
+        },
+        "amt_out_msat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "/ The total amount (in milli-satoshis) of the outgoing HTLC that created\n/ the second half of the circuit."
         }
       }
     },
@@ -2172,17 +2807,17 @@
         "start_time": {
           "type": "string",
           "format": "uint64",
-          "description": "/ Start time is the starting point of the forwarding history request. All records beyond this point will be included, respecting the end time, and the index offset."
+          "description": "/ Start time is the starting point of the forwarding history request. All\n/ records beyond this point will be included, respecting the end time, and\n/ the index offset."
         },
         "end_time": {
           "type": "string",
           "format": "uint64",
-          "description": "/ End time is the end point of the forwarding history request. The response will carry at most 50k records between the start time and the end time. The index offset can be used to implement pagination."
+          "description": "/ End time is the end point of the forwarding history request. The\n/ response will carry at most 50k records between the start time and the\n/ end time. The index offset can be used to implement pagination."
         },
         "index_offset": {
           "type": "integer",
           "format": "int64",
-          "description": "/ Index offset is the offset in the time series to start at. As each response can only contain 50k records, callers can use this to skip around within a packed time series."
+          "description": "/ Index offset is the offset in the time series to start at. As each\n/ response can only contain 50k records, callers can use this to skip\n/ around within a packed time series."
         },
         "num_max_events": {
           "type": "integer",
@@ -2199,14 +2834,70 @@
           "items": {
             "$ref": "#/definitions/lnrpcForwardingEvent"
           },
-          "description": "/ A list of forwarding events from the time slice of the time series specified in the request."
+          "description": "/ A list of forwarding events from the time slice of the time series\n/ specified in the request."
         },
         "last_offset_index": {
           "type": "integer",
           "format": "int64",
-          "description": "/ The index of the last time in the set of returned forwarding events. Can be used to seek further, pagination style."
+          "description": "/ The index of the last time in the set of returned forwarding events. Can\n/ be used to seek further, pagination style."
         }
       }
+    },
+    "lnrpcFundingPsbtFinalize": {
+      "type": "object",
+      "properties": {
+        "signed_psbt": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe funded PSBT that contains all witness data to send the exact channel\ncapacity amount to the PK script returned in the open channel message in a\nprevious step."
+        },
+        "pending_chan_id": {
+          "type": "string",
+          "format": "byte",
+          "description": "/ The pending channel ID of the channel to get the PSBT for."
+        }
+      }
+    },
+    "lnrpcFundingPsbtVerify": {
+      "type": "object",
+      "properties": {
+        "funded_psbt": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe funded but not yet signed PSBT that sends the exact channel capacity\namount to the PK script returned in the open channel message in a previous\nstep."
+        },
+        "pending_chan_id": {
+          "type": "string",
+          "format": "byte",
+          "description": "/ The pending channel ID of the channel to get the PSBT for."
+        }
+      }
+    },
+    "lnrpcFundingShim": {
+      "type": "object",
+      "properties": {
+        "chan_point_shim": {
+          "$ref": "#/definitions/lnrpcChanPointShim",
+          "description": "*\nA channel shim where the channel point was fully constructed outside\nof lnd's wallet and the transaction might already be published."
+        },
+        "psbt_shim": {
+          "$ref": "#/definitions/lnrpcPsbtShim",
+          "description": "*\nA channel shim that uses a PSBT to fund and sign the channel funding\ntransaction."
+        }
+      }
+    },
+    "lnrpcFundingShimCancel": {
+      "type": "object",
+      "properties": {
+        "pending_chan_id": {
+          "type": "string",
+          "format": "byte",
+          "description": "/ The pending channel ID of the channel to cancel the funding shim for."
+        }
+      }
+    },
+    "lnrpcFundingStateStepResp": {
+      "type": "object"
     },
     "lnrpcGenSeedResponse": {
       "type": "object",
@@ -2228,6 +2919,14 @@
     "lnrpcGetInfoResponse": {
       "type": "object",
       "properties": {
+        "version": {
+          "type": "string",
+          "description": "/ The version of the LND software that the node is running."
+        },
+        "commit_hash": {
+          "type": "string",
+          "description": "/ The SHA1 commit hash that the daemon is compiled with."
+        },
         "identity_pubkey": {
           "type": "string",
           "description": "/ The identity pubkey of the current node."
@@ -2235,6 +2934,10 @@
         "alias": {
           "type": "string",
           "title": "/ If applicable, the alias of the current node, e.g. \"bob\""
+        },
+        "color": {
+          "type": "string",
+          "title": "/ The color of the current node in hex code format"
         },
         "num_pending_channels": {
           "type": "integer",
@@ -2245,6 +2948,11 @@
           "type": "integer",
           "format": "int64",
           "title": "/ Number of active channels"
+        },
+        "num_inactive_channels": {
+          "type": "integer",
+          "format": "int64",
+          "title": "/ Number of inactive channels"
         },
         "num_peers": {
           "type": "integer",
@@ -2260,36 +2968,25 @@
           "type": "string",
           "title": "/ The node's current view of the hash of the best block"
         },
-        "synced_to_chain": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "/ Whether the wallet's view is synced to the main chain"
-        },
-        "testnet": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "* \nWhether the current node is connected to testnet. This field is \ndeprecated and the network field should be used instead"
-        },
-        "uris": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "/ The URIs of the current node."
-        },
         "best_header_timestamp": {
           "type": "string",
           "format": "int64",
           "title": "/ Timestamp of the block best known to the wallet"
         },
-        "version": {
-          "type": "string",
-          "description": "/ The version of the LND software that the node is running."
+        "synced_to_chain": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "/ Whether the wallet's view is synced to the main chain"
         },
-        "num_inactive_channels": {
-          "type": "integer",
-          "format": "int64",
-          "title": "/ Number of inactive channels"
+        "synced_to_graph": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Whether we consider ourselves synced with the public channel graph."
+        },
+        "testnet": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "*\nWhether the current node is connected to testnet. This field is\ndeprecated and the network field should be used instead"
         },
         "chains": {
           "type": "array",
@@ -2298,14 +2995,19 @@
           },
           "title": "/ A list of active chains the node is connected to"
         },
-        "color": {
-          "type": "string",
-          "title": "/ The color of the current node in hex code format"
+        "uris": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "/ The URIs of the current node."
         },
-        "synced_to_graph": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Whether we consider ourselves synced with the public channel graph."
+        "features": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/lnrpcFeature"
+          },
+          "description": "Features that our node has advertised in our init message, node\nannouncements and invoices."
         }
       }
     },
@@ -2353,6 +3055,33 @@
         }
       }
     },
+    "lnrpcHTLCAttempt": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/HTLCAttemptHTLCStatus",
+          "description": "/ The status of the HTLC."
+        },
+        "route": {
+          "$ref": "#/definitions/lnrpcRoute",
+          "description": "/ The route taken by this HTLC."
+        },
+        "attempt_time_ns": {
+          "type": "string",
+          "format": "int64",
+          "description": "/ The time in UNIX nanoseconds at which this HTLC was sent."
+        },
+        "resolve_time_ns": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe time in UNIX nanoseconds at which this HTLC was settled or failed.\nThis value will not be set if the HTLC is still IN_FLIGHT."
+        },
+        "failure": {
+          "$ref": "#/definitions/lnrpcFailure",
+          "description": "Detailed htlc failure info."
+        }
+      }
+    },
     "lnrpcHop": {
       "type": "object",
       "properties": {
@@ -2392,7 +3121,19 @@
         "tlv_payload": {
           "type": "boolean",
           "format": "boolean",
-          "description": "* \nIf set to true, then this hop will be encoded using the new variable length\nTLV format."
+          "description": "*\nIf set to true, then this hop will be encoded using the new variable length\nTLV format. Note that if any custom tlv_records below are specified, then\nthis field MUST be set to true for them to be encoded properly."
+        },
+        "mpp_record": {
+          "$ref": "#/definitions/lnrpcMPPRecord",
+          "description": "*\nAn optional TLV record that signals the use of an MPP payment. If present,\nthe receiver will enforce that that the same mpp_record is included in the\nfinal hop payload of all non-zero payments in the HTLC set. If empty, a\nregular single-shot payment is or was attempted."
+        },
+        "custom_records": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          },
+          "description": "*\nAn optional set of key-value TLV records. This is useful within the context\nof the SendToRoute call as it allows callers to specify arbitrary K-V pairs\nto drop off at each hop within the onion."
         }
       }
     },
@@ -2431,7 +3172,7 @@
         "wallet_password": {
           "type": "string",
           "format": "byte",
-          "description": "*\nwallet_password is the passphrase that should be used to encrypt the\nwallet. This MUST be at least 8 chars in length. After creation, this\npassword is required to unlock the daemon."
+          "description": "*\nwallet_password is the passphrase that should be used to encrypt the\nwallet. This MUST be at least 8 chars in length. After creation, this\npassword is required to unlock the daemon. When using REST, this field\nmust be encoded as base64."
         },
         "cipher_seed_mnemonic": {
           "type": "array",
@@ -2443,7 +3184,7 @@
         "aezeed_passphrase": {
           "type": "string",
           "format": "byte",
-          "description": "*\naezeed_passphrase is an optional user provided passphrase that will be used\nto encrypt the generated aezeed cipher seed."
+          "description": "*\naezeed_passphrase is an optional user provided passphrase that will be used\nto encrypt the generated aezeed cipher seed. When using REST, this field\nmust be encoded as base64."
         },
         "recovery_window": {
           "type": "integer",
@@ -2459,6 +3200,16 @@
     "lnrpcInitWalletResponse": {
       "type": "object"
     },
+    "lnrpcInitiator": {
+      "type": "string",
+      "enum": [
+        "INITIATOR_UNKNOWN",
+        "INITIATOR_LOCAL",
+        "INITIATOR_REMOTE",
+        "INITIATOR_BOTH"
+      ],
+      "default": "INITIATOR_UNKNOWN"
+    },
     "lnrpcInvoice": {
       "type": "object",
       "properties": {
@@ -2466,25 +3217,27 @@
           "type": "string",
           "description": "*\nAn optional memo to attach along with the invoice. Used for record keeping\npurposes for the invoice's creator, and will also be set in the description\nfield of the encoded payment request if the description_hash field is not\nbeing used."
         },
-        "receipt": {
-          "type": "string",
-          "format": "byte",
-          "description": "* Deprecated. An optional cryptographic receipt of payment which is not\nimplemented."
-        },
         "r_preimage": {
           "type": "string",
           "format": "byte",
-          "title": "*\nThe hex-encoded preimage (32 byte) which will allow settling an incoming\nHTLC payable to this preimage"
+          "description": "*\nThe hex-encoded preimage (32 byte) which will allow settling an incoming\nHTLC payable to this preimage. When using REST, this field must be encoded\nas base64."
         },
         "r_hash": {
           "type": "string",
           "format": "byte",
-          "title": "/ The hash of the preimage"
+          "description": "*\nThe hash of the preimage. When using REST, this field must be encoded as\nbase64."
         },
         "value": {
           "type": "string",
           "format": "int64",
-          "title": "/ The value of this invoice in satoshis"
+          "description": "The fields value and value_msat are mutually exclusive.",
+          "title": "*\nThe value of this invoice in satoshis"
+        },
+        "value_msat": {
+          "type": "string",
+          "format": "int64",
+          "description": "The fields value and value_msat are mutually exclusive.",
+          "title": "*\nThe value of this invoice in millisatoshis"
         },
         "settled": {
           "type": "boolean",
@@ -2503,12 +3256,12 @@
         },
         "payment_request": {
           "type": "string",
-          "description": "*\nA bare-bones invoice for a payment within the Lightning Network.  With the\ndetails of the invoice, the sender has all the data necessary to send a\npayment to the recipient."
+          "description": "*\nA bare-bones invoice for a payment within the Lightning Network. With the\ndetails of the invoice, the sender has all the data necessary to send a\npayment to the recipient."
         },
         "description_hash": {
           "type": "string",
           "format": "byte",
-          "description": "*\nHash (SHA-256) of a description of the payment. Used if the description of\npayment (memo) is too long to naturally fit within the description field\nof an encoded payment request."
+          "description": "*\nHash (SHA-256) of a description of the payment. Used if the description of\npayment (memo) is too long to naturally fit within the description field\nof an encoded payment request. When using REST, this field must be encoded\nas base64."
         },
         "expiry": {
           "type": "string",
@@ -2571,6 +3324,18 @@
             "$ref": "#/definitions/lnrpcInvoiceHTLC"
           },
           "description": "/ List of HTLCs paying to this invoice [EXPERIMENTAL]."
+        },
+        "features": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/lnrpcFeature"
+          },
+          "description": "/ List of features advertised on the invoice."
+        },
+        "is_keysend": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "*\nIndicates if this invoice was a spontaneous payment that arrived via keysend\n[EXPERIMENTAL]."
         }
       }
     },
@@ -2615,6 +3380,19 @@
         "state": {
           "$ref": "#/definitions/lnrpcInvoiceHTLCState",
           "description": "/ Current state the htlc is in."
+        },
+        "custom_records": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          },
+          "description": "/ Custom tlv records."
+        },
+        "mpp_total_amt_msat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "/ The total amount of the mpp payment in msat."
         }
       },
       "title": "/ Details of an HTLC that paid to an invoice"
@@ -2628,6 +3406,35 @@
       ],
       "default": "ACCEPTED"
     },
+    "lnrpcKeyDescriptor": {
+      "type": "object",
+      "properties": {
+        "raw_key_bytes": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe raw bytes of the key being identified."
+        },
+        "key_loc": {
+          "$ref": "#/definitions/lnrpcKeyLocator",
+          "description": "*\nThe key locator that identifies which key to use for signing."
+        }
+      }
+    },
+    "lnrpcKeyLocator": {
+      "type": "object",
+      "properties": {
+        "key_family": {
+          "type": "integer",
+          "format": "int32",
+          "description": "/ The family of key being identified."
+        },
+        "key_index": {
+          "type": "integer",
+          "format": "int32",
+          "description": "/ The precise index of the key being identified."
+        }
+      }
+    },
     "lnrpcLightningAddress": {
       "type": "object",
       "properties": {
@@ -2637,7 +3444,7 @@
         },
         "host": {
           "type": "string",
-          "title": "/ The network location of the lightning node, e.g. `69.69.69.69:1337` or `localhost:10011`"
+          "title": "/ The network location of the lightning node, e.g. `69.69.69.69:1337` or\n/ `localhost:10011`"
         }
       }
     },
@@ -2662,6 +3469,12 @@
         },
         "color": {
           "type": "string"
+        },
+        "features": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/lnrpcFeature"
+          }
         }
       },
       "description": "*\nAn individual vertex/node within the channel graph. A node is\nconnected to other nodes by one or more channel edges emanating from it. As the\ngraph is directed, a node will also have an incoming edge attached to it for\neach outgoing edge."
@@ -2709,6 +3522,16 @@
             "$ref": "#/definitions/lnrpcPayment"
           },
           "title": "/ The list of payments"
+        },
+        "first_index_offset": {
+          "type": "string",
+          "format": "uint64",
+          "description": "*\nThe index of the first item in the set of returned payments. This can be\nused as the index_offset to continue seeking backwards in the next request."
+        },
+        "last_index_offset": {
+          "type": "string",
+          "format": "uint64",
+          "description": "*\nThe index of the last item in the set of returned payments. This can be used\nas the index_offset to continue seeking forwards in the next request."
         }
       }
     },
@@ -2736,6 +3559,34 @@
         }
       }
     },
+    "lnrpcMPPRecord": {
+      "type": "object",
+      "properties": {
+        "payment_addr": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nA unique, random identifier used to authenticate the sender as the intended\npayer of a multi-path payment. The payment_addr must be the same for all\nsubpayments, and match the payment_addr provided in the receiver's invoice.\nThe same payment_addr must be used on all subpayments."
+        },
+        "total_amt_msat": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe total amount in milli-satoshis being sent as part of a larger multi-path\npayment. The caller is responsible for ensuring subpayments to the same node\nand payment_hash sum exactly to total_amt_msat. The same\ntotal_amt_msat must be used on all subpayments."
+        }
+      }
+    },
+    "lnrpcMacaroonPermission": {
+      "type": "object",
+      "properties": {
+        "entity": {
+          "type": "string",
+          "description": "/ The entity a permission grants access to."
+        },
+        "action": {
+          "type": "string",
+          "description": "/ The action that is granted."
+        }
+      }
+    },
     "lnrpcMultiChanBackup": {
       "type": "object",
       "properties": {
@@ -2749,7 +3600,7 @@
         "multi_chan_backup": {
           "type": "string",
           "format": "byte",
-          "description": "*\nA single encrypted blob containing all the static channel backups of the\nchannel listed above. This can be stored as a single file or blob, and\nsafely be replaced with any prior/future versions."
+          "description": "*\nA single encrypted blob containing all the static channel backups of the\nchannel listed above. This can be stored as a single file or blob, and\nsafely be replaced with any prior/future versions. When using REST, this\nfield must be encoded as base64."
         }
       }
     },
@@ -2849,6 +3700,41 @@
         }
       }
     },
+    "lnrpcNodeMetricType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "BETWEENNESS_CENTRALITY"
+      ],
+      "default": "UNKNOWN"
+    },
+    "lnrpcNodeMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "betweenness_centrality": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/lnrpcFloatMetric"
+          },
+          "description": "*\nBetweenness centrality is the sum of the ratio of shortest paths that pass\nthrough the node for each pair of nodes in the graph (not counting paths\nstarting or ending at this node).\nMap of node pubkey to betweenness centrality of the node. Normalized\nvalues are in the [0,1] closed interval."
+        }
+      }
+    },
+    "lnrpcNodePair": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe sending node of the pair. When using REST, this field must be encoded as\nbase64."
+        },
+        "to": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe receiving node of the pair. When using REST, this field must be encoded\nas base64."
+        }
+      }
+    },
     "lnrpcNodeUpdate": {
       "type": "object",
       "properties": {
@@ -2879,11 +3765,11 @@
         "node_pubkey": {
           "type": "string",
           "format": "byte",
-          "title": "/ The pubkey of the node to open a channel with"
+          "description": "*\nThe pubkey of the node to open a channel with. When using REST, this field\nmust be encoded as base64."
         },
         "node_pubkey_string": {
           "type": "string",
-          "title": "/ The hex encoded pubkey of the node to open a channel with"
+          "description": "*\nThe hex encoded pubkey of the node to open a channel with. Deprecated now\nthat the REST gateway supports base64 encoding of bytes fields."
         },
         "local_funding_amount": {
           "type": "string",
@@ -2893,42 +3779,50 @@
         "push_sat": {
           "type": "string",
           "format": "int64",
-          "title": "/ The number of satoshis to push to the remote side as part of the initial commitment state"
+          "title": "/ The number of satoshis to push to the remote side as part of the initial\n/ commitment state"
         },
         "target_conf": {
           "type": "integer",
           "format": "int32",
-          "description": "/ The target number of blocks that the funding transaction should be confirmed by."
+          "description": "/ The target number of blocks that the funding transaction should be\n/ confirmed by."
         },
         "sat_per_byte": {
           "type": "string",
           "format": "int64",
-          "description": "/ A manual fee rate set in sat/byte that should be used when crafting the funding transaction."
+          "description": "/ A manual fee rate set in sat/byte that should be used when crafting the\n/ funding transaction."
         },
         "private": {
           "type": "boolean",
           "format": "boolean",
-          "description": "/ Whether this channel should be private, not announced to the greater network."
+          "description": "/ Whether this channel should be private, not announced to the greater\n/ network."
         },
         "min_htlc_msat": {
           "type": "string",
           "format": "int64",
-          "description": "/ The minimum value in millisatoshi we will require for incoming HTLCs on the channel."
+          "description": "/ The minimum value in millisatoshi we will require for incoming HTLCs on\n/ the channel."
         },
         "remote_csv_delay": {
           "type": "integer",
           "format": "int64",
-          "description": "/ The delay we require on the remote's commitment transaction. If this is not set, it will be scaled automatically with the channel size."
+          "description": "/ The delay we require on the remote's commitment transaction. If this is\n/ not set, it will be scaled automatically with the channel size."
         },
         "min_confs": {
           "type": "integer",
           "format": "int32",
-          "description": "/ The minimum number of confirmations each one of your outputs used for the funding transaction must satisfy."
+          "description": "/ The minimum number of confirmations each one of your outputs used for\n/ the funding transaction must satisfy."
         },
         "spend_unconfirmed": {
           "type": "boolean",
           "format": "boolean",
-          "description": "/ Whether unconfirmed outputs should be used as inputs for the funding transaction."
+          "description": "/ Whether unconfirmed outputs should be used as inputs for the funding\n/ transaction."
+        },
+        "close_address": {
+          "type": "string",
+          "description": "Close address is an optional address which specifies the address to which\nfunds should be paid out to upon cooperative close. This field may only be\nset if the peer supports the option upfront feature bit (call listpeers\nto check). The remote peer will only accept cooperative closes to this\naddress if it is set.\n\nNote: If this value is set on channel creation, you will *not* be able to\ncooperatively close out to a different address."
+        },
+        "funding_shim": {
+          "$ref": "#/definitions/lnrpcFundingShim",
+          "description": "*\nFunding shims are an optional argument that allow the caller to intercept\ncertain funding functionality. For example, a shim can be provided to use a\nparticular key for the commitment key (ideally cold) rather than use one\nthat is generated by the wallet as normal, or signal that signing will be\ncarried out in an interactive manner (PSBT based)."
         }
       }
     },
@@ -2936,10 +3830,21 @@
       "type": "object",
       "properties": {
         "chan_pending": {
-          "$ref": "#/definitions/lnrpcPendingUpdate"
+          "$ref": "#/definitions/lnrpcPendingUpdate",
+          "description": "*\nSignals that the channel is now fully negotiated and the funding\ntransaction published."
         },
         "chan_open": {
-          "$ref": "#/definitions/lnrpcChannelOpenUpdate"
+          "$ref": "#/definitions/lnrpcChannelOpenUpdate",
+          "description": "*\nSignals that the channel's funding transaction has now reached the\nrequired number of confirmations on chain and can be used."
+        },
+        "psbt_fund": {
+          "$ref": "#/definitions/lnrpcReadyForPsbtFunding",
+          "description": "*\nSignals that the funding process has been suspended and the construction\nof a PSBT that funds the channel PK script is now required."
+        },
+        "pending_chan_id": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe pending channel ID of the created channel. This value may be used to\nfurther the funding flow manually via the FundingStateStep method."
         }
       }
     },
@@ -3001,6 +3906,20 @@
           "items": {
             "$ref": "#/definitions/lnrpcRouteHint"
           }
+        },
+        "payment_addr": {
+          "type": "string",
+          "format": "byte"
+        },
+        "num_msat": {
+          "type": "string",
+          "format": "int64"
+        },
+        "features": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/lnrpcFeature"
+          }
         }
       }
     },
@@ -3019,14 +3938,7 @@
         "creation_date": {
           "type": "string",
           "format": "int64",
-          "title": "/ The date of this payment"
-        },
-        "path": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "/ The path this payment took"
+          "title": "/ Deprecated, use creation_time_ns"
         },
         "fee": {
           "type": "string",
@@ -3064,8 +3976,41 @@
           "type": "string",
           "format": "int64",
           "title": "/  The fee paid for this payment in milli-satoshis"
+        },
+        "creation_time_ns": {
+          "type": "string",
+          "format": "int64",
+          "description": "/ The time in UNIX nanoseconds at which the payment was created."
+        },
+        "htlcs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/lnrpcHTLCAttempt"
+          },
+          "description": "/ The HTLCs made in attempt to settle the payment."
+        },
+        "payment_index": {
+          "type": "string",
+          "format": "uint64",
+          "description": "*\nThe creation index of this payment. Each payment can be uniquely identified\nby this index, which may not strictly increment by 1 for payments made in\nolder versions of lnd."
+        },
+        "failure_reason": {
+          "$ref": "#/definitions/lnrpcPaymentFailureReason"
         }
       }
+    },
+    "lnrpcPaymentFailureReason": {
+      "type": "string",
+      "enum": [
+        "FAILURE_REASON_NONE",
+        "FAILURE_REASON_TIMEOUT",
+        "FAILURE_REASON_NO_ROUTE",
+        "FAILURE_REASON_ERROR",
+        "FAILURE_REASON_INCORRECT_PAYMENT_DETAILS",
+        "FAILURE_REASON_INSUFFICIENT_BALANCE"
+      ],
+      "default": "FAILURE_REASON_NONE",
+      "description": " - FAILURE_REASON_NONE: *\nPayment isn't failed (yet).\n - FAILURE_REASON_TIMEOUT: *\nThere are more routes to try, but the payment timeout was exceeded.\n - FAILURE_REASON_NO_ROUTE: *\nAll possible routes were tried and failed permanently. Or were no\nroutes to the destination at all.\n - FAILURE_REASON_ERROR: *\nA non-recoverable error has occured.\n - FAILURE_REASON_INCORRECT_PAYMENT_DETAILS: *\nPayment details incorrect (unknown hash, invalid amt or\ninvalid final cltv delta)\n - FAILURE_REASON_INSUFFICIENT_BALANCE: *\nInsufficient local balance."
     },
     "lnrpcPeer": {
       "type": "object",
@@ -3111,6 +4056,32 @@
         "sync_type": {
           "$ref": "#/definitions/PeerSyncType",
           "description": "The type of sync we are currently performing with this peer."
+        },
+        "features": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/lnrpcFeature"
+          },
+          "description": "/ Features advertised by the remote peer in their init message."
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/lnrpcTimestampedError"
+          },
+          "description": "The latest errors received from our peer with timestamps, limited to the 10\nmost recent errors. These errors are tracked across peer connections, but\nare not persisted across lnd restarts. Note that these errors are only\nstored for peers that we have channels open with, to prevent peers from\nspamming us with errors at no cost."
+        }
+      }
+    },
+    "lnrpcPeerEvent": {
+      "type": "object",
+      "properties": {
+        "pub_key": {
+          "type": "string",
+          "description": "/ The identity pubkey of the peer."
+        },
+        "type": {
+          "$ref": "#/definitions/PeerEventEventType"
         }
       }
     },
@@ -3134,7 +4105,7 @@
           "items": {
             "$ref": "#/definitions/PendingChannelsResponseClosedChannel"
           },
-          "title": "/ Channels pending closing"
+          "description": "Deprecated: Channels pending closing previously contained cooperatively\nclosed channels with a single confirmation. These channels are now\nconsidered closed from the time we see them on chain."
         },
         "pending_force_closing_channels": {
           "type": "array",
@@ -3219,7 +4190,7 @@
         "fee_rate": {
           "type": "number",
           "format": "double",
-          "description": "/ The effective fee rate in milli-satoshis. The precision of this value goes up to 6 decimal places, so 1e-6."
+          "description": "/ The effective fee rate in milli-satoshis. The precision of this value\n/ goes up to 6 decimal places, so 1e-6."
         },
         "time_lock_delta": {
           "type": "integer",
@@ -3229,12 +4200,37 @@
         "max_htlc_msat": {
           "type": "string",
           "format": "uint64",
-          "description": "/ If set, the maximum HTLC size in milli-satoshis. If unset, the maximum HTLC will be unchanged."
+          "description": "/ If set, the maximum HTLC size in milli-satoshis. If unset, the maximum\n/ HTLC will be unchanged."
+        },
+        "min_htlc_msat": {
+          "type": "string",
+          "format": "uint64",
+          "description": "/ The minimum HTLC size in milli-satoshis. Only applied if\n/ min_htlc_msat_specified is true."
+        },
+        "min_htlc_msat_specified": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "/ If true, min_htlc_msat is applied."
         }
       }
     },
     "lnrpcPolicyUpdateResponse": {
       "type": "object"
+    },
+    "lnrpcPsbtShim": {
+      "type": "object",
+      "properties": {
+        "pending_chan_id": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nA unique identifier of 32 random bytes that will be used as the pending\nchannel ID to identify the PSBT state machine when interacting with it and\non the wire protocol to initiate the funding request."
+        },
+        "base_psbt": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nAn optional base PSBT the new channel output will be added to. If this is\nnon-empty, it must be a binary serialized PSBT."
+        }
+      }
     },
     "lnrpcQueryRoutesResponse": {
       "type": "object",
@@ -3253,6 +4249,25 @@
         }
       }
     },
+    "lnrpcReadyForPsbtFunding": {
+      "type": "object",
+      "properties": {
+        "funding_address": {
+          "type": "string",
+          "description": "*\nThe P2WSH address of the channel funding multisig address that the below\nspecified amount in satoshis needs to be sent to."
+        },
+        "funding_amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe exact amount in satoshis that needs to be sent to the above address to\nfund the pending channel."
+        },
+        "psbt": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nA raw PSBT that contains the pending channel output. If a base PSBT was\nprovided in the PsbtShim, this is the base PSBT with one additional output.\nIf no base PSBT was specified, this is an otherwise empty PSBT with exactly\none output."
+        }
+      }
+    },
     "lnrpcRestoreBackupResponse": {
       "type": "object"
     },
@@ -3260,11 +4275,13 @@
       "type": "object",
       "properties": {
         "chan_backups": {
-          "$ref": "#/definitions/lnrpcChannelBackups"
+          "$ref": "#/definitions/lnrpcChannelBackups",
+          "description": "*\nThe channels to restore as a list of channel/backup pairs."
         },
         "multi_chan_backup": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "*\nThe channels to restore in the packed multi backup format. When using\nREST, this field must be encoded as base64."
         }
       }
     },
@@ -3274,12 +4291,12 @@
         "total_time_lock": {
           "type": "integer",
           "format": "int64",
-          "description": "*\nThe cumulative (final) time lock across the entire route.  This is the CLTV\nvalue that should be extended to the first hop in the route. All other hops\nwill decrement the time-lock as advertised, leaving enough time for all\nhops to wait for or present the payment preimage to complete the payment."
+          "description": "*\nThe cumulative (final) time lock across the entire route. This is the CLTV\nvalue that should be extended to the first hop in the route. All other hops\nwill decrement the time-lock as advertised, leaving enough time for all\nhops to wait for or present the payment preimage to complete the payment."
         },
         "total_fees": {
           "type": "string",
           "format": "int64",
-          "description": "*\nThe sum of the fees paid at each hop within the final route.  In the case\nof a one-hop payment, this value will be zero as we don't need to pay a fee\nto ourselves."
+          "description": "*\nThe sum of the fees paid at each hop within the final route. In the case\nof a one-hop payment, this value will be zero as we don't need to pay a fee\nto ourselves."
         },
         "total_amt": {
           "type": "string",
@@ -3366,12 +4383,12 @@
         "target_conf": {
           "type": "integer",
           "format": "int32",
-          "description": "/ The target number of blocks that this transaction should be confirmed by."
+          "description": "/ The target number of blocks that this transaction should be confirmed\n/ by."
         },
         "sat_per_byte": {
           "type": "string",
           "format": "int64",
-          "description": "/ A manual fee rate set in sat/byte that should be used when crafting the transaction."
+          "description": "/ A manual fee rate set in sat/byte that should be used when crafting the\n/ transaction."
         },
         "send_all": {
           "type": "boolean",
@@ -3404,29 +4421,34 @@
         "dest": {
           "type": "string",
           "format": "byte",
-          "title": "/ The identity pubkey of the payment recipient"
+          "description": "*\nThe identity pubkey of the payment recipient. When using REST, this field\nmust be encoded as base64."
         },
         "dest_string": {
           "type": "string",
-          "title": "/ The hex-encoded identity pubkey of the payment recipient"
+          "description": "*\nThe hex-encoded identity pubkey of the payment recipient. Deprecated now\nthat the REST gateway supports base64 encoding of bytes fields."
         },
         "amt": {
           "type": "string",
           "format": "int64",
-          "description": "/ Number of satoshis to send."
+          "description": "*\nThe amount to send expressed in satoshis.\n\nThe fields amt and amt_msat are mutually exclusive."
+        },
+        "amt_msat": {
+          "type": "string",
+          "format": "int64",
+          "description": "*\nThe amount to send expressed in millisatoshis.\n\nThe fields amt and amt_msat are mutually exclusive."
         },
         "payment_hash": {
           "type": "string",
           "format": "byte",
-          "title": "/ The hash to use within the payment's HTLC"
+          "description": "*\nThe hash to use within the payment's HTLC. When using REST, this field\nmust be encoded as base64."
         },
         "payment_hash_string": {
           "type": "string",
-          "title": "/ The hex-encoded hash to use within the payment's HTLC"
+          "description": "*\nThe hex-encoded hash to use within the payment's HTLC. Deprecated now\nthat the REST gateway supports base64 encoding of bytes fields."
         },
         "payment_request": {
           "type": "string",
-          "description": "*\nA bare-bones invoice for a payment within the Lightning Network.  With the\ndetails of the invoice, the sender has all the data necessary to send a\npayment to the recipient."
+          "description": "*\nA bare-bones invoice for a payment within the Lightning Network. With the\ndetails of the invoice, the sender has all the data necessary to send a\npayment to the recipient."
         },
         "final_cltv_delta": {
           "type": "integer",
@@ -3442,18 +4464,35 @@
           "format": "uint64",
           "description": "*\nThe channel id of the channel that must be taken to the first hop. If zero,\nany channel may be used."
         },
+        "last_hop_pubkey": {
+          "type": "string",
+          "format": "byte",
+          "description": "*\nThe pubkey of the last hop of the route. If empty, any hop may be used."
+        },
         "cltv_limit": {
           "type": "integer",
           "format": "int64",
-          "description": "* \nAn optional maximum total time lock for the route. This should not exceed\nlnd's `--max-cltv-expiry` setting. If zero, then the value of\n`--max-cltv-expiry` is enforced."
+          "description": "*\nAn optional maximum total time lock for the route. This should not exceed\nlnd's `--max-cltv-expiry` setting. If zero, then the value of\n`--max-cltv-expiry` is enforced."
         },
-        "dest_tlv": {
+        "dest_custom_records": {
           "type": "object",
           "additionalProperties": {
             "type": "string",
             "format": "byte"
           },
-          "description": "* \nAn optional field that can be used to pass an arbitrary set of TLV records\nto a peer which understands the new records. This can be used to pass\napplication specific data during the payment attempt."
+          "description": "*\nAn optional field that can be used to pass an arbitrary set of TLV records\nto a peer which understands the new records. This can be used to pass\napplication specific data during the payment attempt. Record types are\nrequired to be in the custom range \u003e= 65536. When using REST, the values\nmust be encoded as base64."
+        },
+        "allow_self_payment": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "/ If set, circular payments to self are permitted."
+        },
+        "dest_features": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/lnrpcFeatureBit"
+          },
+          "description": "*\nFeatures assumed to be supported by the final node. All transitive feature\ndependencies must also be set properly. For a given feature bit pair, either\noptional or remote may be set, but not both. If this field is nil or empty,\nthe router will try to load destination features from the graph as a\nfallback."
         }
       }
     },
@@ -3482,11 +4521,11 @@
         "payment_hash": {
           "type": "string",
           "format": "byte",
-          "description": "/ The payment hash to use for the HTLC."
+          "description": "*\nThe payment hash to use for the HTLC. When using REST, this field must be\nencoded as base64."
         },
         "payment_hash_string": {
           "type": "string",
-          "description": "/ An optional hex-encoded payment hash to be used for the HTLC."
+          "description": "*\nAn optional hex-encoded payment hash to be used for the HTLC. Deprecated now\nthat the REST gateway supports base64 encoding of bytes fields."
         },
         "route": {
           "$ref": "#/definitions/lnrpcRoute",
@@ -3500,7 +4539,7 @@
         "msg": {
           "type": "string",
           "format": "byte",
-          "title": "/ The message to be signed"
+          "description": "*\nThe message to be signed. When using REST, this field must be encoded as\nbase64."
         }
       }
     },
@@ -3515,6 +4554,20 @@
     },
     "lnrpcStopResponse": {
       "type": "object"
+    },
+    "lnrpcTimestampedError": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The unix timestamp in seconds when the error occurred."
+        },
+        "error": {
+          "type": "string",
+          "description": "The string representation of the error sent by our peer."
+        }
+      }
     },
     "lnrpcTransaction": {
       "type": "object",
@@ -3583,7 +4636,7 @@
         "wallet_password": {
           "type": "string",
           "format": "byte",
-          "description": "*\nwallet_password should be the current valid passphrase for the daemon. This\nwill be required to decrypt on-disk material that the daemon requires to\nfunction properly."
+          "description": "*\nwallet_password should be the current valid passphrase for the daemon. This\nwill be required to decrypt on-disk material that the daemon requires to\nfunction properly. When using REST, this field must be encoded as base64."
         },
         "recovery_window": {
           "type": "integer",
@@ -3602,7 +4655,7 @@
     "lnrpcUtxo": {
       "type": "object",
       "properties": {
-        "type": {
+        "address_type": {
           "$ref": "#/definitions/lnrpcAddressType",
           "title": "/ The type of address"
         },
@@ -3639,7 +4692,7 @@
         "msg": {
           "type": "string",
           "format": "byte",
-          "title": "/ The message over which the signature is to be verified"
+          "description": "*\nThe message over which the signature is to be verified. When using REST,\nthis field must be encoded as base64."
         },
         "signature": {
           "type": "string",
@@ -3680,6 +4733,165 @@
           "title": "/ The unconfirmed balance of a wallet(with 0 confirmations)"
         }
       }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpc_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "http_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "http_status": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "x-stream-definitions": {
+    "lnrpcChanBackupSnapshot": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcChanBackupSnapshot"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcChanBackupSnapshot"
+    },
+    "lnrpcChannelAcceptRequest": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcChannelAcceptRequest"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcChannelAcceptRequest"
+    },
+    "lnrpcChannelEventUpdate": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcChannelEventUpdate"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcChannelEventUpdate"
+    },
+    "lnrpcCloseStatusUpdate": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcCloseStatusUpdate"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcCloseStatusUpdate"
+    },
+    "lnrpcGraphTopologyUpdate": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcGraphTopologyUpdate"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcGraphTopologyUpdate"
+    },
+    "lnrpcInvoice": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcInvoice"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcInvoice"
+    },
+    "lnrpcOpenStatusUpdate": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcOpenStatusUpdate"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcOpenStatusUpdate"
+    },
+    "lnrpcPeerEvent": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcPeerEvent"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcPeerEvent"
+    },
+    "lnrpcSendResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcSendResponse"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcSendResponse"
+    },
+    "lnrpcTransaction": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/lnrpcTransaction"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of lnrpcTransaction"
     }
   }
 }
